@@ -52,6 +52,7 @@ sensor:
 | images         | not required                                                                               |
 | image          | Path to the image including file name .png preferred                                       |
 | position       | The text position on a XY axis at 64x64 pixel                                              |
+
 If you have any further questions, I will be happy to help.
 
 ## Planned updates
