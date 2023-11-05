@@ -9,7 +9,7 @@ Custom component for easy use of a Pixoo64 within Home Assistant
 
 ## Installation
 1. Install this integration with HACS (adding repository required), or copy the contents of this
-repository into the `custom_components/random_entity` directory.
+repository into the `custom_components/pixoo-homeassistant` directory.
 2. Restart Home Assistant.
 
 Now edit your configuration.yaml
