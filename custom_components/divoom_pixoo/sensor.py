@@ -84,7 +84,7 @@ class Pixoo64(Entity):
             if font == "FONT_PICO_8":
                 pixoo.draw_text(text, (posX, posY), (rgbR, rgbG, rgbB), FONT_PICO_8)
             if font == "FONT_GICKO":
-                pixoo.draw_text(text, (posX, posY), (rgbR, rgbG, rgbB), FONT_GICKO)
+                pixoo.draw_text(text.upper(), (posX, posY), (rgbR, rgbG, rgbB), FONT_GICKO)
 
         pixoo.push()
 
