@@ -57,6 +57,12 @@ class Pixoo64(Entity):
         pixoo = Pixoo(self._ip_address)
         pixoo.clear()
 
+        for image in self._pages[self._current_page_index].get("images", []):
+            img = image['image']
+            posX = image['position'][0]
+            posY = image['position'][1]
+            pixoo.draw_image(img, (posX, posY))
+
         for text in self._attr_extra_state_attributes['list'][self._current_page_index]["texts"]:
             font = text['font']
             posX = text['position'][0]
@@ -79,13 +85,6 @@ class Pixoo64(Entity):
                 pixoo.draw_text(text, (posX, posY), (rgbR, rgbG, rgbB), FONT_PICO_8)
             if font == "FONT_GICKO":
                 pixoo.draw_text(text, (posX, posY), (rgbR, rgbG, rgbB), FONT_GICKO)
-
-        #for image in self._attr_extra_state_attributes['list'][self._current_page_index]["images"]:
-        for image in self._pages[self._current_page_index].get("images", []):
-            img = image['image']
-            posX = image['position'][0]
-            posY = image['position'][1]
-            pixoo.draw_image(img, (posX, posY))
 
         pixoo.push()
 
