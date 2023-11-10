@@ -91,13 +91,13 @@ description: ""
 trigger:
   - platform: state
     entity_id:
-      - event.kinderzimmer_button_3
+      - event.ANY-EVENT
 condition: []
 action:
   - service: divoom_pixoo.show_message
     data:
       entity_id: sensor.divoom_pixoo
-      message: HELLO
+      message: HELLO WORLD
       position: [0,0]
       color: [255, 0, 255]
       font: FONT_GICKO
