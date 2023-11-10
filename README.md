@@ -20,48 +20,71 @@ Now edit your configuration.yaml
 <img src="images/example.jpg" title="Example of configuration.yaml" align="left" height="150" />
 
 ```
-sensor:
-  - platform: divoom_pixoo
-    ip_address: 'CHANGEME'
-    scan_interval: 10 #All 10 seconds the Display is get an update
-    pages:
-      - page: 1
-        texts:
-          - text: 'sensor.time' #Currently, only the status of a sensor is possible or a free text combined with the status
-            position: [10, 56]
-            font: FONT_GICKO # at this time there are two different Fonts FONT_GICKO and FONT_PICO_8
-            font_color: [255, 0, 0] #red in RGB
-        images:
-          - image: "/config/img/testimage.png"
-            position: [0, 0]
+divoom_pixoo:
+  ip_address: 'CHANGEME'
+  scan_interval:
+    seconds: 15
+  pages:
+    - page: 1
+      PV:
+        - power: "{{ states.sensor.YOUR_SENSOR.state }}"
+          storage: "{{ states.sensor.YOUR_SENSOR.state }}"
+          discharge: "{{ states.sensor.YOUR_SENSOR.state }}"
+          powerhousetotal: "{{ states.sensor.YOUR_SENSOR.state }}"
+          vomNetz: "{{ states.sensor.YOUR_SENSOR.state }}"
+          time: "{{ states.sensor.YOUR_SENSOR.state }}"  #Formar HH:MM
+    - page: 2
+      texts:
+        - text: "github/gickowtf"
+          position: [0, 10]
+          font: FONT_PICO_8
+          font_color: [255, 0, 0]  # red
+        - text: "Thx 4 Support"
+          position: [0, 30]
+          font: FONT_PICO_8
+          font_color: [255, 0, 0]  # red
+      images:
+        - image: "/config/img/anyPicture.png" #max 64 x 64 Pixel
+          position: [30, 10]
+    - page: 3
+      channel:
+        - number: 2
 ```
 
 ### all options for configuration.yaml
 
-| **options**    | **settings**                                                                               |
-|:---------------|:-------------------------------------------------------------------------------------------|
-| ip_address     | the IP address of Pixoo64 required                                                         |
-| scan_interval  | to update the display or the time in seconds to jump from page to next page                |
-| pages          | required                                                                                   |
-| page           | required numbered by integers                                                              |
-| texts          | required                                                                                   |
-| text           | Currently, only the status of a sensor is possible or a free text combined with the status |
-| position       | The text position on a XY axis at 64x64 pixel                                              |
-| font           | at this time there are two different Fonts FONT_GICKO and FONT_PICO_8                      |
-| font_color     | RGB colors                                                                                 |
-| images         | not required                                                                               |
-| image          | Path to the image including file name .png preferred                                       |
-| position       | The text position on a XY axis at 64x64 pixel                                              |
+| **options**     | **settings**                                                                               |
+|:----------------|:-------------------------------------------------------------------------------------------|
+| ip_address      | the IP address of Pixoo64 required                                                         |
+| scan_interval   | to update the display or the time in seconds to jump from page to next page                |
+| pages           | required                                                                                   |
+|                 |                                                                                            |
+| page            | required numbered by integers                                                              |
+| texts           | required                                                                                   |
+| text            | Currently, only the status of a sensor is possible or a free text combined with the status |
+| position        | The text position on a XY axis at 64x64 pixel                                              |
+| font            | at this time there are two different Fonts FONT_GICKO and FONT_PICO_8                      |
+| font_color      | RGB colors                                                                                 |
+| images          | not required                                                                               |
+| image           | Path to the image including file name .png preferred                                       |
+| position        | The text position on a XY axis at 64x64 pixel                                              |
+|                 |                                                                                            |
+| PV              | own designed PV stats                                                                      |
+| power           | -required     use {{ template }}                                                           |
+| storage         | -required     use {{ template }}                                                           |
+| discharge       | -required     use {{ template }}                                                           |
+| powerhousetotal | -required     use {{ template }}                                                           |
+| vomNetz         | -required     use {{ template }}                                                           |
+| time            | -required     use {{ template }}                                                           |
+|                 |                                                                                            |
+| channel         | Custom Channel in APP                                                                      |
+| number          | 0 = channel 1, 1 = channel 2, 2 = channel 3                                                |
 
 If you have any further questions, I will be happy to help.
 
-## Planned updates
+## Issues
 
-If you are interested in helping with the project I would love to hear from you.
-
-- async
-- Push notification
-- many more examples
+Sometimes the display crashes, especially with animated images. I have often read on the Internet that this is due to the power supply being too weak or the brightness being too high. I now have the display permanently set to 90% and it no longer crashes.
 
 ## Discussions
 
