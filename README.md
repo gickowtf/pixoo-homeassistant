@@ -82,9 +82,31 @@ divoom_pixoo:
 
 If you have any further questions, I will be happy to help.
 
+### Automation Exampl
+
+You can use it for Push Notifications.
+```
+alias: Pixoo Notification
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - event.kinderzimmer_button_3
+condition: []
+action:
+  - service: divoom_pixoo.show_message
+    data:
+      entity_id: sensor.divoom_pixoo
+      message: HELLO
+      position: [0,0]
+      color: [255, 0, 255]
+      font: FONT_GICKO
+mode: single
+```
+
 ## Issues
 
-Sometimes the display crashes, especially with animated images. I have often read on the Internet that this is due to the power supply being too weak or the brightness being too high. I now have the display permanently set to 90% and it no longer crashes.
+Sometimes the display crashes, especially with animated images. I have often read on the Internet that this is due to the power supply being too weak or the brightness being too high. I now have the display permanently set to **90%** and it no longer crashes.
 
 ## Discussions
 
