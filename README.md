@@ -82,7 +82,7 @@ divoom_pixoo:
 
 If you have any further questions, I will be happy to help.
 
-### Automation Exampl
+### Automation Example
 
 You can use it for Push Notifications.
 ```
