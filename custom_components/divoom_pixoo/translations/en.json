@@ -1,13 +1,57 @@
 {
-  "show_message": {
-    "fields": {
-      "entity_id": "example: sensor.divoom_pixoo",
-      "message": "Text string",
-      "position": "position integer 1-64 [X, Y]",
-      "color": "RGB Color [255, 255, 255]",
-      "font": "FONT_GICKO or FONT_PICO_8",
-      "image": "image path example /config/images/image.png",
-      "image_position": "position integer 1-64 [X, Y]"
+  "config": {
+    "title": "Divoom Pixoo",
+    "step": {
+      "user": {
+        "title": "Connect to your Divoom Pixoo",
+        "data": {
+          "ip_address": "IP Address"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Divoom Pixoo, please check your IP address",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "An unknown error occurred"
+    },
+    "success": {
+      "title": "Success",
+      "content": "Your Divoom Pixoo is now connected"
+    }
+  },
+  "service": {
+    "show_message": {
+      "description": "Display a message on the Divoom Pixoo.",
+      "fields": {
+        "entity_id": {
+          "description": "The entity_id of the Divoom Pixoo device.",
+          "example": "sensor.divoom_pixoo"
+        },
+        "message": {
+          "description": "The message text to display.",
+          "example": "Hello World"
+        },
+        "position": {
+          "description": "The position on the screen to start the message (x, y coordinates).",
+          "example": "[10, 20]"
+        },
+        "color": {
+          "description": "The RGB color for the message.",
+          "example": "[255, 255, 255]"
+        },
+        "font": {
+          "description": "The font to use for the message.",
+          "example": "FONT_GICKO"
+        },
+        "image": {
+          "description": "Path to the image to display.",
+          "example": "/config/images/image.png"
+        },
+        "image_position": {
+          "description": "The position on the screen to place the image (x, y coordinates).",
+          "example": "[30, 40]"
+        }
+      }
     }
   }
 }
