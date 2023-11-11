@@ -1,2 +1,3 @@
 show_message:
+  name: Use for push notifications
   description: Display a message on the Divoom Pixoo
