@@ -1,21 +1,4 @@
-{
-  "title": "Divoom Pixoo",
-  "config": {
-    "step": {
-      "user": {
-        "title": "Connect to your Divoom Pixoo",
-        "description": "Please enter the IP address of your Divoom Pixoo device."
-      }
-    },
-    "error": {
-      "cannot_connect": "Failed to connect to the Divoom Pixoo device. Please check your IP address and try again."
-    },
-    "success": {
-      "title": "Success",
-      "content": "Your Divoom Pixoo is now connected."
-    }
-  },
-  "service": {
+{"service": {
     "show_message": {
       "description": "Display a message on the Divoom Pixoo.",
       "fields": {
