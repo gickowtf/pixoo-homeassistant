@@ -54,6 +54,11 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
                     vol.Required('number'): cv.positive_int,
                 })
             ]),
+            vol.Optional('clockId'): vol.All(cv.ensure_list, [
+                vol.Schema({
+                    vol.Required('number'): cv.positive_int,
+                })
+            ]),
         })
     ]),
 })
@@ -93,7 +98,7 @@ class Pixoo64(Entity):
         self._current_page = self._pages[self._current_page_index]
         self._attr_name = 'divoom_pixoo'
         self._attr_extra_state_attributes = {}
-        self._attr_extra_state_attributes['list'] = pages
+        self._attr_extra_state_attributes['page'] = self._current_page['page']
         _LOGGER.debug(pages)
         self.showing_notification = False
 
@@ -123,6 +128,7 @@ class Pixoo64(Entity):
         current_page_data = self._pages[self._current_page_index]
         _LOGGER.debug(f"current page: {current_page_data}")
         self._current_page = self._pages[self._current_page_index]
+        self._attr_extra_state_attributes['page'] = self._current_page['page']
         self._current_page_index = (self._current_page_index + 1) % len(self._pages)
 
         def update():
@@ -132,6 +138,10 @@ class Pixoo64(Entity):
             if "channel" in current_page_data:
                 for ch in current_page_data["channel"]:
                     pixoo.set_custom_page(ch['number'])
+
+            if "clockId" in current_page_data:
+                for clock in current_page_data["clockId"]:
+                    pixoo.set_clock(clock['number'])
 
             if "images" in current_page_data:
                 for image in current_page_data["images"]:

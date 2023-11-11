@@ -1,8 +1,13 @@
+# __init__.py
+from datetime import timedelta
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import discovery
-
+import voluptuous as vol
+from homeassistant.helpers import config_validation as cv
 
 DOMAIN = "divoom_pixoo"
+
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Divoom Pixoo component from configuration.yaml."""
@@ -17,6 +22,16 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
     hass.async_create_task(
         discovery.async_load_platform(hass, 'sensor', DOMAIN, conf, config)
+    )
+
+    hass.async_create_task(
+        discovery.async_load_platform(
+            hass,
+            'light',
+            DOMAIN,
+            {'ip_address': conf['ip_address']},
+            config
+        )
     )
 
     async def async_show_message(service: ServiceCall):
@@ -34,6 +49,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
                 await entity.async_show_message(message, position, color, font, image, image_position)
                 break
 
-    hass.services.async_register(DOMAIN, "show_message", async_show_message)
+    # Service registrieren
+    hass.services.async_register(DOMAIN, 'show_message', async_show_message)
 
     return True

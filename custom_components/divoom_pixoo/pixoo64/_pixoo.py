@@ -311,7 +311,7 @@ class Pixoo:
     def set_clock(self, clock_id):
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetClockSelectId',
-            'ClockId': clock_id
+            'ClockId': int(clock_id)
         }))
         data = response.json()
         if data['error_code'] != 0:
@@ -341,6 +341,23 @@ class Pixoo:
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
+
+    def get_state(self):
+        response = requests.post(self.__url, json.dumps({
+            'Command': 'Channel/GetAllConf'
+        }))
+        data = response.json()
+        if data['LightSwitch'] == 1:
+            return True
+        else:
+            return False
+
+    def get_brightness(self):
+        response = requests.post(self.__url, json.dumps({
+            'Command': 'Channel/GetAllConf'
+        }))
+        data = response.json()
+        return data['Brightness']
 
     def set_screen_off(self):
         self.set_screen(False)
