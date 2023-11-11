@@ -1,0 +1,11 @@
+{
+  "show_message": {
+    "fields": {
+      "entity_id": "example: sensor.divoom_pixoo",
+      "message": "Text string",
+      "position": "position integer 1-64 [X, Y]",
+      "color": "RGB Color [255, 255, 255]",
+      "font": "FONT_GICKO or FONT_PICO_8",
+      "image": "image path example /config/images/image.png",
+      "image_position": "position integer 1-64 [X, Y]"
+    }
