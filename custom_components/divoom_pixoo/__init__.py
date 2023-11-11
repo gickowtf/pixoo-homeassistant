@@ -34,10 +34,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
                 await entity.async_show_message(message, position, color, font, image, image_position)
                 break
 
-    hass.services.async_register(
-        DOMAIN,
-        'show_message',
-        async_show_message
-    )
+    hass.services.async_register(DOMAIN, "show_message", async_show_message)
 
     return True
