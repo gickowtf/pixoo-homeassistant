@@ -1,24 +1,2 @@
 show_message:
-  description: Zeigt eine Nachricht auf dem Divoom Pixoo-Gerät an.
-  fields:
-    entity_id:
-      description: Die entity_id des Divoom Pixoo-Geräts, das aktualisiert werden soll.
-      example: "sensor.divoom_pixoo"
-    message:
-      description: Die Nachricht, die angezeigt werden soll.
-      example: "Hallo Welt!"
-    position:
-      description: Die Position auf dem Bildschirm, an der die Nachricht beginnen soll.
-      example: [0, 10]
-    color:
-      description: Die Farbe der Nachricht als RGB-Wert.
-      example: [255, 255, 255]
-    font:
-      description: Die Schriftart, die verwendet werden soll.
-      example: "FONT_PICO_8"
-    image:
-      description: Ein optionaler Bildpfad, der angezeigt werden soll.
-      example: "/config/images/mein_bild.png"
-    image_position:
-      description: Die Position auf dem Bildschirm, an der das Bild beginnen soll.
-      example: [0, 20]
+  description: Display a message on the Divoom Pixoo
