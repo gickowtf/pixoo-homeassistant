@@ -9,3 +9,5 @@
       "image": "image path example /config/images/image.png",
       "image_position": "position integer 1-64 [X, Y]"
     }
+  }
+}
