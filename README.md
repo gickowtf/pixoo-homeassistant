@@ -97,7 +97,7 @@ divoom_pixoo:
 | discharge       | -required     use {{ template }}   | Current charging/discharging power                                                                                                                                      |
 | powerhousetotal | -required     use {{ template }}   | Current power consumption of the house                                                                                                                                  |
 | vomNetz         | -required     use {{ template }}   | Current consumption from grid or feed-in                                                                                                                                |
-| time            | -required     use {{ template }}   | Current time                                                                                                                                                            |
+| time            | -required     use {{ template }}   | Current time example: {{ now().strftime("%H:%M") }}                                                                                                                     |
 
 <br>
 
