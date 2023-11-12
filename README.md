@@ -35,7 +35,7 @@ divoom_pixoo:
           discharge: "{{ states.sensor.YOUR_SENSOR.state }}"
           powerhousetotal: "{{ states.sensor.YOUR_SENSOR.state }}"
           vomNetz: "{{ states.sensor.YOUR_SENSOR.state }}"
-          time: "{{ states.sensor.YOUR_SENSOR.state }}"  #Formar HH:MM
+          time: "{{ now().strftime('%H:%M') }}"  #Format HH:MM
     - page: 2
       texts:
         - text: "github/gickowtf"
