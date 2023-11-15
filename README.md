@@ -70,6 +70,7 @@ divoom_pixoo:
 
 <br>
 
+<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/XY.png?raw=true" title="Example XY axis"  height="300" />
 
 ### Page setting, here you can be creative and insert as much text and images as you like.
 
