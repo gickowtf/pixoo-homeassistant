@@ -143,6 +143,13 @@ action:
 mode: single
 ```
 
+## Font
+| **FONT**    | **IMAGE**                                                                                                                  |
+|:------------|:---------------------------------------------------------------------------------------------------------------------------|
+| FONT_GICKO  | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true" title="FONT_GICKO" />  |
+
+
+
 ## Issues
 
 Sometimes the display crashes, especially with animated images. I have often read on the Internet that this is due to the power supply being too weak or the brightness being too high. I now have the display permanently set to **90%** and it no longer crashes.
