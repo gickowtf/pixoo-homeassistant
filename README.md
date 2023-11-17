@@ -125,22 +125,24 @@ If you have any further questions, I will be happy to help.
 
 You can use it for Push Notifications.
 ```
-alias: Pixoo Notification
-description: ""
+alias: YOUR TITEL
 trigger:
-  - platform: state
-    entity_id:
-      - event.ANY-EVENT
-condition: []
+  - platform: YOUR PLATFORM
+    e.g. entity_id: YOUR ENTITY
 action:
   - service: divoom_pixoo.show_message
     data:
       entity_id: sensor.divoom_pixoo
-      message: HELLO WORLD
-      position: [0,0]
-      color: [255, 0, 255]
-      font: FONT_GICKO
-mode: single
+      #If you want draw more than 1 Message u have to need more positions, colors and fonts too
+      messages: ["Message 1", "Message 2"] 
+      positions: [[1, 1], [1, 20]]
+      colors: [[255, 0, 0], [0, 255, 0]]
+      fonts: ["FONT_GICKO", "FONT_PICO_8"]
+      #same as Messages at images u need for each image an image_positions
+      images : ["/config/custom_components/divoom_pixoo/img/sunpower.png",
+                "/config/custom_components/divoom_pixoo/img/haus.png"]
+      image_positions : [[1, 30],
+                          [20, 30]]
 ```
 
 ## Font

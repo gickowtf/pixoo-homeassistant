@@ -3,9 +3,10 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.components.light import (ATTR_BRIGHTNESS, PLATFORM_SCHEMA, LightEntity)
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from . import DOMAIN
+from . import DOMAIN, VERSION
 
 from .pixoo64._pixoo import Pixoo
 import logging
@@ -38,7 +39,7 @@ def setup_platform(
 class DivoomLight(LightEntity):
     def __init__(self, ip_address):
         self._ip_address = ip_address
-        self._name = "divoom_pixoo"
+        self._name = "Divoom Pixoo 64 Light"
         self._state = None
         self._brightness = None
         self._pixoo = Pixoo(self._ip_address)
@@ -69,3 +70,21 @@ class DivoomLight(LightEntity):
 
     def update(self) -> None:
         self._state = self._pixoo.get_state()
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def unique_id(self):
+        return f"divoom_pixoo_light"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.unique_id)},
+            name=self.name,
+            manufacturer="Divoom",
+            model="Pixoo",
+            sw_version=VERSION,
+        )

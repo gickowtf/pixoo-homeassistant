@@ -6,62 +6,27 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.helpers.entity import Entity
 from homeassistant.const import CONF_IP_ADDRESS
-from homeassistant.helpers.template import Template
+from homeassistant.helpers.template import Template, TemplateError
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_platform
 from . import DOMAIN
+from .schemas.page_schema import PAGE_SCHEMA
+
 from .pages.solar import solar
 
 from .pixoo64._pixoo import Pixoo
 from .pixoo64._font import FONT_PICO_8, FONT_GICKO
 
-
 import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_IP_ADDRESS): cv.string,
     vol.Optional('scan_interval'): cv.time_period,
-    vol.Required('pages'): vol.All(cv.ensure_list, [
-        vol.Schema({
-            vol.Required('page'): cv.positive_int,
-            vol.Optional('texts'): vol.All(cv.ensure_list, [
-                vol.Schema({
-                    vol.Required('text'): cv.string,
-                    vol.Required('position'): vol.All(cv.ensure_list, [cv.positive_int], vol.Length(min=2, max=2)),
-                    vol.Required('font'): cv.string,
-                    vol.Required('font_color'): vol.All(cv.ensure_list, [cv.positive_int], vol.Length(min=3, max=3)),
-                })
-            ]),
-            vol.Optional('images'): vol.All(cv.ensure_list, [
-                vol.Schema({
-                    vol.Required('image'): cv.string,
-                    vol.Required('position'): vol.All(cv.ensure_list, [cv.positive_int], vol.Length(min=2, max=2)),
-                })
-            ]),
-            vol.Optional('PV'): vol.All(cv.ensure_list, [
-                vol.Schema({
-                    vol.Required('power'): cv.string,
-                    vol.Required('storage'): cv.string,
-                    vol.Required('discharge'): cv.string,
-                    vol.Required('powerhousetotal'): cv.string,
-                    vol.Required('vomNetz'): cv.string,
-                    vol.Required('time'): cv.string,
-                })
-            ]),
-            vol.Optional('channel'): vol.All(cv.ensure_list, [
-                vol.Schema({
-                    vol.Required('number'): cv.positive_int,
-                })
-            ]),
-            vol.Optional('clockId'): vol.All(cv.ensure_list, [
-                vol.Schema({
-                    vol.Required('number'): cv.positive_int,
-                })
-            ]),
-        })
-    ]),
+    vol.Required('pages'): vol.All(cv.ensure_list, [PAGE_SCHEMA]),
 })
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     if discovery_info is None:
@@ -70,6 +35,14 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         return
     ip_address = discovery_info[CONF_IP_ADDRESS]
     pages = discovery_info.get('pages', [])
+    for page in pages:
+        condition_template = page.get('condition')
+        if condition_template is not None:
+            try:
+                page['condition_template'] = Template(condition_template, hass)
+            except (TemplateError, ValueError) as e:
+                _LOGGER.error("Error in condition template: %s", e)
+                page['condition_template'] = None
 
     scan_interval_config = discovery_info.get('scan_interval')
     _LOGGER.debug("Scan interval config: %s", scan_interval_config)
@@ -86,6 +59,19 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     entity = Pixoo64(ip_address, pages, scan_interval)
     async_add_entities([entity], True)
 
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        'show_message',
+        {
+            vol.Required('messages'): [cv.string],
+            vol.Required('positions'): [[cv.positive_int]],
+            vol.Required('colors'): [[cv.positive_int]],
+            vol.Required('fonts'): [cv.string],
+            vol.Optional('images', default=[]): [cv.string],
+            vol.Optional('image_positions', default=[]): [[cv.positive_int]],
+        },
+        'async_show_message',
+    )
 
 
 class Pixoo64(Entity):
@@ -114,7 +100,7 @@ class Pixoo64(Entity):
     async def async_will_remove_from_hass(self):
         """When entity is being removed from hass."""
         if self._update_interval is not None:
-            self._update_interval()  # Dies stoppt das Zeitintervall
+            self._update_interval()
             self._update_interval = None
 
     async def _async_update(self, now=None):
@@ -125,11 +111,24 @@ class Pixoo64(Entity):
         if self.showing_notification:
             return
 
+        self._current_page = self._pages[self._current_page_index]
         current_page_data = self._pages[self._current_page_index]
         _LOGGER.debug(f"current page: {current_page_data}")
-        self._current_page = self._pages[self._current_page_index]
-        self._attr_extra_state_attributes['page'] = self._current_page['page']
-        self._current_page_index = (self._current_page_index + 1) % len(self._pages)
+        self._attr_extra_state_attributes['page'] = current_page_data['page']
+
+
+        if 'condition_template' in current_page_data:
+            condition = current_page_data['condition_template']
+            condition.hass = self.hass
+            try:
+                if not condition.async_render():
+                    self._current_page_index = (self._current_page_index + 1) % len(self._pages)
+                    return
+            except TemplateError as e:
+                _LOGGER.error("Error rendering condition template: %s", e)
+                self._current_page_index = (self._current_page_index + 1) % len(self._pages)
+                return
+
 
         def update():
             pixoo = Pixoo(self._ip_address)
@@ -168,9 +167,13 @@ class Pixoo64(Entity):
                 pixoo.push()
 
         await self.hass.async_add_executor_job(update)
+        self._current_page_index = (self._current_page_index + 1) % len(self._pages)
 
-    async def async_show_message(self, message, position, color, font, image=None, image_position=None):
-        if self.hass is None:
+
+
+    async def async_show_message(self, messages, positions, colors, fonts, images=None, image_positions=None):
+        if not all([messages, positions, colors, fonts]) or len(messages) != len(positions) != len(colors) != len(fonts):
+            _LOGGER.error("Lists for messages, positions, colors, and fonts must all be present and have the same length.")
             return
 
         self.showing_notification = True
@@ -179,16 +182,22 @@ class Pixoo64(Entity):
             pixoo = Pixoo(self._ip_address)
             pixoo.clear()
 
-            if image and image_position:
-                pixoo.draw_image(image, tuple(image_position))
+            for img, img_pos in zip(images, image_positions):
+                pixoo.draw_image(img, tuple(img_pos))
 
-            selected_font = FONT_PICO_8 if font == 'FONT_PICO_8' else FONT_GICKO
-            pixoo.draw_text(message, tuple(position), tuple(color), selected_font)
+            for message, position, color, font in zip(messages, positions, colors, fonts):
+                selected_font = FONT_PICO_8 if font == 'FONT_PICO_8' else FONT_GICKO
+                if font == 'FONT_PICO_8':
+                    pixoo.draw_text(message, tuple(position), tuple(color), selected_font)
+                else:
+                    pixoo.draw_text(message.upper(), tuple(position), tuple(color), selected_font)
+
             pixoo.push()
 
         await self.hass.async_add_executor_job(draw)
         await asyncio.sleep(self._scan_interval.total_seconds())
         self.showing_notification = False
+
 
     @property
     def state(self):

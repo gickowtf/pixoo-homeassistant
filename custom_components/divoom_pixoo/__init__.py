@@ -7,6 +7,7 @@ import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
 
 DOMAIN = "divoom_pixoo"
+VERSION = "1.2.0"
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
@@ -37,16 +38,16 @@ async def async_setup(hass: HomeAssistant, config: dict):
     async def async_show_message(service: ServiceCall):
         """Handle the service call to show a message on the Pixoo device."""
         entity_id = service.data.get('entity_id')
-        message = service.data.get('message')
-        position = service.data.get('position')
-        color = service.data.get('color')
-        font = service.data.get('font')
-        image = service.data.get('image')
-        image_position = service.data.get('image_position')
-
+        messages = service.data.get('messages')
+        positions = service.data.get('positions')
+        colors = service.data.get('colors')
+        fonts = service.data.get('fonts')
+        images = service.data.get('images', [])
+        image_positions = service.data.get('image_positions', [])
+        ...
         for entity in hass.data[DOMAIN].get('entities', []):
             if entity.entity_id == entity_id:
-                await entity.async_show_message(message, position, color, font, image, image_position)
+                await entity.async_show_message(messages, positions, colors, fonts, images, image_positions)
                 break
 
     # Service registrieren
