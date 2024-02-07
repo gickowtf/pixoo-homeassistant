@@ -53,7 +53,7 @@ divoom_pixoo:
       channel:
         - number: 2
     - page: 4
-      ClockId:
+      clockId:
         - number: 39
 ```
 
@@ -114,7 +114,7 @@ divoom_pixoo:
 ### ClockId Channel - In Divoom app you can set three different custom channels which you can select here. 
 | **Keywords** | **Values**         |
 |:-------------|:-------------------|
-| ClockId      | Clock Faces in APP |
+| clockId      | Clock Faces in APP |
 | number       | int                |
 
 If you have any further questions, I will be happy to help.
