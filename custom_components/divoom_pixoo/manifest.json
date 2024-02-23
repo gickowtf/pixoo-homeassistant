@@ -2,7 +2,7 @@
   "domain": "divoom_pixoo",
   "name": "Divoom Pixoo 64",
   "codeowners": ["@gickowtf"],
-  "config_flow": false,
+  "config_flow": true,
   "documentation": "https://github.com/gickowtf/pixoo-homeassistant/blob/main/README.md",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/gickowtf/pixoo-homeassistant/issues",
