@@ -1,9 +1,12 @@
+from homeassistant.components.light import (LightEntity, ColorMode, ATTR_BRIGHTNESS)
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.light import (ATTR_BRIGHTNESS, PLATFORM_SCHEMA, LightEntity)
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.util.color import brightness_to_value, value_to_brightness
+
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from . import DOMAIN, VERSION
@@ -12,6 +15,7 @@ from .pixoo64._pixoo import Pixoo
 import logging
 
 _LOGGER = logging.getLogger(__name__)
+BRIGHTNESS_SCALE = (1, 100)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_IP_ADDRESS): cv.string,
@@ -51,10 +55,6 @@ class DivoomLight(LightEntity):
         return self._name
 
     @property
-    def brightness(self):
-        return self._brightness
-
-    @property
     def is_on(self) -> bool | None:
         return self._state
 
@@ -62,20 +62,26 @@ class DivoomLight(LightEntity):
     def turn_on(self, **kwargs):
         self._state = True
         self._pixoo.set_screen(True)
+        if ATTR_BRIGHTNESS in kwargs:
+            val = brightness_to_value(BRIGHTNESS_SCALE, kwargs[ATTR_BRIGHTNESS])
+            self._pixoo.set_brightness(val)
 
     def turn_off(self, **kwargs):
         self._state = False
         self._pixoo.set_screen(False)
 
-
     def update(self) -> None:
         self._state = self._pixoo.get_state()
+        self._brightness = value_to_brightness(BRIGHTNESS_SCALE, self._pixoo.get_brightness())
 
     @property
     def name(self):
         return self._name
 
     @property
+    def supported_color_modes(self) -> set[ColorMode] | set[str] | None:
+        return {ColorMode.BRIGHTNESS}
+
     def unique_id(self):
         return f"divoom_pixoo_light"
 
