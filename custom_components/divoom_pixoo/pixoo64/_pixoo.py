@@ -62,6 +62,7 @@ class Pixoo:
     __buffers_send = 0
     __counter = 0
     __refresh_counter_limit = 32
+    timeout = 5
 
     def __init__(self, address, size=64, debug=False, refresh_connection_automatically=True):
         assert size in [16, 32, 64], \
@@ -279,7 +280,7 @@ class Pixoo:
             'speed': movement_speed,
             'TextString': text,
             'color': rgb_to_hex_color(color)
-        }))
+        }), timeout=self.timeout)
 
         data = response.json()
         if data['error_code'] != 0:
@@ -294,7 +295,7 @@ class Pixoo:
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetBrightness',
             'Brightness': brightness
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -303,7 +304,7 @@ class Pixoo:
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetIndex',
             'SelectIndex': int(channel)
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -312,7 +313,7 @@ class Pixoo:
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetClockSelectId',
             'ClockId': int(clock_id)
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -325,7 +326,7 @@ class Pixoo:
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetCustomPageIndex',
             'CustomPageIndex': index
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -337,7 +338,7 @@ class Pixoo:
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/OnOffScreen',
             'OnOff': 1 if on else 0
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -345,7 +346,7 @@ class Pixoo:
     def get_state(self):
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/GetAllConf'
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['LightSwitch'] == 1:
             return True
@@ -355,7 +356,7 @@ class Pixoo:
     def get_brightness(self):
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/GetAllConf'
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         return data['Brightness']
 
@@ -369,7 +370,7 @@ class Pixoo:
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetEqPosition',
             'EqPosition': equalizer_position
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -383,7 +384,7 @@ class Pixoo:
             print(error)
 
     def __load_counter(self):
-        response = requests.post(self.__url, '{"Command": "Draw/GetHttpGifId"}')
+        response = requests.post(self.__url, '{"Command": "Draw/GetHttpGifId"}', timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -417,7 +418,7 @@ class Pixoo:
             'PicID': self.__counter,
             'PicSpeed': 1000,
             'PicData': str(base64.b64encode(bytearray(self.__buffer)).decode())
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -432,7 +433,7 @@ class Pixoo:
             print(f'[.] Resetting counter remotely')
         response = requests.post(self.__url, json.dumps({
             'Command': 'Draw/ResetHttpGifId'
-        }))
+        }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
