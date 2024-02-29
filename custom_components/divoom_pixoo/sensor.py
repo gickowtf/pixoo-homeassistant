@@ -31,6 +31,8 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
             vol.Required('fonts'): [cv.string],
             vol.Optional('images', default=[]): [cv.string],
             vol.Optional('image_positions', default=[]): [[cv.positive_int]],
+            vol.Optional('info_text', default="No"): cv.string,
+            vol.Optional('info_images', default="No"): cv.string,
         },
         'async_show_message',
     )
@@ -134,7 +136,7 @@ class Pixoo64(Entity):
         self._current_page_index = (self._current_page_index + 1) % len(self._pages)
         self.schedule_update_ha_state()
 
-    async def async_show_message(self, messages, positions, colors, fonts, images=None, image_positions=None):
+    async def async_show_message(self, messages, positions, colors, fonts, images=None, image_positions=None, info_text=None, info_images=None):
         if not all([messages, positions, colors, fonts]) or len(messages) != len(positions) != len(colors) != len(fonts):
             _LOGGER.error("Lists for messages, positions, colors, and fonts must all be present and have the same length.")
             return
