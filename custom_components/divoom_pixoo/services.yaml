@@ -53,7 +53,7 @@ show_message:
       name: Images
       description: 'The path to the images to display. Example: [ "/config/custom_components/divoom_pixoo/img/sunpower.png", "/config/custom_components/divoom_pixoo/img/haus.png" ]'
       required: false
-      examples: '[ "/config/custom_components/divoom_pixoo/img/sunpower.png", "/config/custom_components/divoom_pixoo/img/haus.png" ]'
+      example: '[ "/config/custom_components/divoom_pixoo/img/sunpower.png", "/config/custom_components/divoom_pixoo/img/haus.png" ]'
       selector:
         object:
     image_positions:
