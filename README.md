@@ -13,48 +13,44 @@ Custom component for easy use of a Pixoo64 within Home Assistant. With this inte
 1. Install this integration with HACS (adding repository required), or copy the contents of this
 repository into the `custom_components/pixoo-homeassistant` directory.
 2. Restart Home Assistant.
+3. Go to Settings / Integrations and add integration "Divoom Pixoo 64"
+4. In the following window you can now enter the IP of your device and the update interval.
+In the large text field below, enter the configuration
 
-Now edit your configuration.yaml
 
-
-### configuration.yaml example:
+### configuration List of pages in JSON *:
  Just a small example with the HA logo and the current time!
 
 <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/solar.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" />
 
 ```
-divoom_pixoo:
-  ip_address: 'CHANGEME'
-  scan_interval:
-    seconds: 15
-  pages:
-    - page: 1
-      PV:
-        - power: "{{ states.sensor.YOUR_SENSOR.state }}"
-          storage: "{{ states.sensor.YOUR_SENSOR.state }}"
-          discharge: "{{ states.sensor.YOUR_SENSOR.state }}"
-          powerhousetotal: "{{ states.sensor.YOUR_SENSOR.state }}"
-          vomNetz: "{{ states.sensor.YOUR_SENSOR.state }}"
-          time: "{{ now().strftime('%H:%M') }}"  #Format HH:MM
-    - page: 2
-      texts:
-        - text: "github/gickowtf"
-          position: [0, 10]
-          font: FONT_PICO_8
-          font_color: [255, 0, 0]  # red
-        - text: "Thx 4 Support"
-          position: [0, 30]
-          font: FONT_PICO_8
-          font_color: [255, 0, 0]  # red
-      images:
-        - image: "/config/img/anyPicture.png" #max 64 x 64 Pixel
-          position: [30, 10]
-    - page: 3
-      channel:
-        - number: 2
-    - page: 4
-      clockId:
-        - number: 39
+- page: 1
+  PV:
+    - power: "{{ states.sensor.YOUR_SENSOR.state }}"
+      storage: "{{ states.sensor.YOUR_SENSOR.state }}"
+      discharge: "{{ states.sensor.YOUR_SENSOR.state }}"
+      powerhousetotal: "{{ states.sensor.YOUR_SENSOR.state }}"
+      vomNetz: "{{ states.sensor.YOUR_SENSOR.state }}"
+      time: "{{ now().strftime('%H:%M') }}"  #Format HH:MM
+- page: 2
+  texts:
+    - text: "github/gickowtf"
+      position: [0, 10]
+      font: FONT_PICO_8
+      font_color: [255, 0, 0]  # red
+    - text: "Thx 4 Support"
+      position: [0, 30]
+      font: FONT_PICO_8
+      font_color: [255, 0, 0]  # red
+  images:
+    - image: "/config/img/anyPicture.png" #max 64 x 64 Pixel
+      position: [30, 10]
+- page: 3
+  channel:
+    - number: 2
+- page: 4
+  clockId:
+    - number: 39
 ```
 
 ## all options for configuration.yaml
@@ -62,10 +58,7 @@ divoom_pixoo:
 ### Basic settings required
 
 | **Keywords**  | **Values**                                                                   |
-|:--------------|:-----------------------------------------------------------------------------|
-| ip_address    | the IP address of Pixoo64 required                                           |
-| scan_interval | to update the display or the time in seconds to jump from page to next page  |
-| pages         | required                                                                     |
+|:--------------|:-----------------------------------------------------------------------------| 
 | page          | required numbered by integers                                                |
 
 <br>
@@ -124,26 +117,33 @@ If you have any further questions, I will be happy to help.
 ### Automation Example
 
 You can use it for Push Notifications.
-```
-alias: YOUR TITEL
-trigger:
-  - platform: YOUR PLATFORM
-    e.g. entity_id: YOUR ENTITY
-action:
-  - service: divoom_pixoo.show_message
-    data:
-      entity_id: sensor.divoom_pixoo
-      #If you want draw more than 1 Message u have to need more positions, colors and fonts too
-      messages: ["Message 1", "Message 2"] 
-      positions: [[1, 1], [1, 20]]
-      colors: [[255, 0, 0], [0, 255, 0]]
-      fonts: ["FONT_GICKO", "FONT_PICO_8"]
-      #same as Messages at images u need for each image an image_positions
-      images : ["/config/custom_components/divoom_pixoo/img/sunpower.png",
-                "/config/custom_components/divoom_pixoo/img/haus.png"]
-      image_positions : [[1, 30],
-                          [20, 30]]
-```
+Trigger with anything!
+
+Action with the Service "Divoom Pixoo 64: Use for push notifications".
+
+#### IMPORTANT
+**Display a message on the Divoom Pixoo. Please select the "... Current Page" entity of the device.**
+
+In the following dialog you can define your push notification as usual in JSON format.
+
+**Messages** 
+The messages to display. Example: ["Hello World!", "How are you?"]
+
+**Positions**
+The positions of the components. Example: [[1,1], [1,20]]
+
+**Colors**
+List of RGB values for the texts. Example: [[255,0,0], [0,255,0]]
+
+**Fonts**
+List of the font for each text. Example: ["FONT_GICKO", "FONT_PICO_8"]
+
+**Images**
+The path to the images to display. Example: [ "/config/custom_components/divoom_pixoo/img/sunpower.png", "/config/custom_components/divoom_pixoo/img/haus.png" ]
+
+**Image positions**
+The positions of the images. Example: [[1,30], [20,30]]
+
 
 ## Font
 | **FONT**    | **IMAGE**                                                                                                                  |
@@ -165,3 +165,6 @@ https://github.com/gickowtf/pixoo-homeassistant/discussions
 This is not official software from Divoom.
 It is a custom integration created by me (gickowtf) and therefore Divoom is not responsible for any damages/problems caused by this integration, nor does Divoom provide any end-user support for the integration.
 Use this integration at your own risk.
+
+## ❤️ Many thanks to
+@Mrredstone5230 - Thanks for the conversion to config flow
