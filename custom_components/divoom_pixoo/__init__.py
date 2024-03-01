@@ -1,56 +1,73 @@
 # __init__.py
-from datetime import timedelta
-from homeassistant.helpers.event import async_track_time_interval
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import discovery
-import voluptuous as vol
-from homeassistant.helpers import config_validation as cv
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+import logging
+from .const import CURRENT_ENTRY_VERSION, DOMAIN, VERSION
+from .pixoo64 import Pixoo
 
-DOMAIN = "divoom_pixoo"
-VERSION = "1.2.0"
+_LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the Divoom Pixoo component from configuration.yaml."""
-    if DOMAIN not in config:
-        return True
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, update=False):
+    """Set up Divoom Pixoo from a config entry."""
+    if DOMAIN not in hass.data:
+        hass.data[DOMAIN] = {}
 
-    conf = config[DOMAIN]
-    hass.data[DOMAIN] = {
-        'ip_address': conf['ip_address'],
-        'entities': []
-    }
+    try:
+        pix = await hass.async_add_executor_job(load_pixoo, entry.options.get('ip_address'))
+    except Exception as e:
+        _LOGGER.error("Error setting up Pixoo: %s", e)
+        return False
 
-    hass.async_create_task(
-        discovery.async_load_platform(hass, 'sensor', DOMAIN, conf, config)
-    )
+    hass.data[DOMAIN][entry.entry_id] = {}
+    hass.data[DOMAIN][entry.entry_id]['pixoo'] = pix
+    hass.data[DOMAIN][entry.entry_id]['entry_data'] = entry.options
 
-    hass.async_create_task(
-        discovery.async_load_platform(
-            hass,
-            'light',
-            DOMAIN,
-            {'ip_address': conf['ip_address']},
-            config
-        )
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, ["light", "sensor"])
+    if not update:
+        entry.add_update_listener(async_update_entry)
 
-    async def async_show_message(service: ServiceCall):
-        """Handle the service call to show a message on the Pixoo device."""
-        entity_id = service.data.get('entity_id')
-        messages = service.data.get('messages')
-        positions = service.data.get('positions')
-        colors = service.data.get('colors')
-        fonts = service.data.get('fonts')
-        images = service.data.get('images', [])
-        image_positions = service.data.get('image_positions', [])
-        ...
-        for entity in hass.data[DOMAIN].get('entities', []):
-            if entity.entity_id == entity_id:
-                await entity.async_show_message(messages, positions, colors, fonts, images, image_positions)
-                break
+    return True
 
-    # Service registrieren
-    hass.services.async_register(DOMAIN, 'show_message', async_show_message)
 
+def load_pixoo(ip_address: str):
+    """Load the Pixoo device. This is a blocking call."""
+    return Pixoo(ip_address)
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Unload a config entry. Called by HA."""
+    _LOGGER.debug("Unload entry %s.", entry.entry_id)
+
+    del hass.data[DOMAIN][entry.entry_id]
+
+    return await hass.config_entries.async_unload_platforms(entry, ["light", "sensor"])
+
+
+async def async_update_entry(hass: HomeAssistant, entry: ConfigEntry):
+    # Called by HA when the config entry is updated.
+    await async_unload_entry(hass, entry)
+    await async_setup_entry(hass, entry, True)
+    _LOGGER.debug("Updated entry %s.", entry.entry_id)
+
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate old entry. Called for every entry when HA find the versions don't match."""
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version > CURRENT_ENTRY_VERSION:
+        # This means the user has downgraded from a future version
+        return False
+
+    # if config_entry.version == 1:
+    #     new = {**config_entry.options}
+    #     new["pages_data"] = [{"page": 1, "ClockId": 1}] (handle data changes)
+    #     hass.config_entries.async_update_entry(config_entry, data=new)
+    #     config_entry.version = 2
+
+    if config_entry.version != CURRENT_ENTRY_VERSION:
+        _LOGGER.error("Migration failed for entry %s.", config_entry.entry_id)
+        return False
+
+    _LOGGER.debug("Migration to version %s successful", config_entry.version)
     return True

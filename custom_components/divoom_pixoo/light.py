@@ -1,14 +1,8 @@
-from homeassistant.components.light import (LightEntity, ColorMode, ATTR_BRIGHTNESS)
-import voluptuous as vol
-import homeassistant.helpers.config_validation as cv
-from homeassistant.components.light import (ATTR_BRIGHTNESS, PLATFORM_SCHEMA, LightEntity)
-from homeassistant.const import CONF_IP_ADDRESS
-from homeassistant.core import HomeAssistant
+from homeassistant.components.light import (LightEntity, ATTR_BRIGHTNESS, ColorMode)
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util.color import brightness_to_value, value_to_brightness
 
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from . import DOMAIN, VERSION
 
 from .pixoo64._pixoo import Pixoo
@@ -17,36 +11,20 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 BRIGHTNESS_SCALE = (1, 100)
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_IP_ADDRESS): cv.string,
-    })
 
-def setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None
-) -> None:
-    """Set up the Awesome Light platform."""
-    if discovery_info is None:
-        _LOGGER.error("No discovery_info found in Divoom Pixoo light setup")
-        return
-    ip_address = discovery_info.get(CONF_IP_ADDRESS)
-    if ip_address is None:
-        _LOGGER.error("No IP address found for Divoom Pixoo light")
-        return
-
-    light = DivoomLight(ip_address)
-    add_entities([light], True)
+async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
+    async_add_entities([ DivoomLight(config_entry=config_entry, pixoo=hass.data[DOMAIN][config_entry.entry_id]["pixoo"]) ], True)
 
 
 class DivoomLight(LightEntity):
-    def __init__(self, ip_address):
+    def __init__(self, ip_address=None, config_entry: ConfigEntry = None, pixoo: Pixoo = None):
         self._ip_address = ip_address
-        self._name = "Divoom Pixoo 64 Light"
-        self._state = None
+        self._config_entry = config_entry
+        self._attr_has_entity_name = True
+        self._name = "Light"
+        self._pixoo = Pixoo(self._ip_address) if pixoo is None else pixoo
         self._brightness = None
-        self._pixoo = Pixoo(self._ip_address)
+        self._state = None
         _LOGGER.debug(f"Divoom Pixoo IP address from configuration: {self._ip_address}")
 
     @property
@@ -57,7 +35,6 @@ class DivoomLight(LightEntity):
     @property
     def is_on(self) -> bool | None:
         return self._state
-
 
     def turn_on(self, **kwargs):
         self._state = True
@@ -75,21 +52,17 @@ class DivoomLight(LightEntity):
         self._brightness = value_to_brightness(BRIGHTNESS_SCALE, self._pixoo.get_brightness())
 
     @property
-    def name(self):
-        return self._name
-
-    @property
     def supported_color_modes(self) -> set[ColorMode] | set[str] | None:
         return {ColorMode.BRIGHTNESS}
 
     def unique_id(self):
-        return f"divoom_pixoo_light"
+        return "light_" + str(self._config_entry.entry_id)
 
     @property
     def device_info(self) -> DeviceInfo:
         return DeviceInfo(
-            identifiers={(DOMAIN, self.unique_id)},
-            name=self.name,
+            identifiers={(DOMAIN, str(self._config_entry.entry_id)) if self._config_entry is not None else (DOMAIN, "divoom")},
+            name=self._config_entry.title,
             manufacturer="Divoom",
             model="Pixoo",
             sw_version=VERSION,
