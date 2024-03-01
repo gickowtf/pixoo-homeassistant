@@ -1,0 +1,45 @@
+{
+    "title": "Divoom Pixoo 64",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configure your new Pixoo device",
+                "description": "Please enter the IP address of your Pixoo device.",
+                "data": {
+                    "ip_address": "IP address of the device",
+                    "scan_interval": "Scan interval (in seconds)",
+                    "pages_data": "List of pages in JSON"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "A device with that ID has already been added.",
+            "not_supported": "Sorry, there is no support for this device."
+        },
+        "error": {
+            "connection": "Unable to connect to your device with those details (IP). It could be an intermittent issue, or they may be incorrect.",
+            "already_configured": "Another device with this IP address has already been added."
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "Configure your Pixoo device",
+                "description": "Update your existing Pixoo device",
+                "data": {
+                    "ip_address": "IP address of the device",
+                    "scan_interval": "Scan interval (in seconds)",
+                    "pages_data": "List of pages in JSON"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "A device with that ID has already been added.",
+            "not_supported": "Sorry, there is no support for this device."
+        },
+        "error": {
+            "connection": "Unable to connect to your device with those details (IP). It could be an intermittent issue, or they may be incorrect.",
+            "already_configured": "Another device with this IP address has already been added."
+        }
+    }
+}
