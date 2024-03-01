@@ -288,9 +288,6 @@ class Pixoo:
 
     def set_brightness(self, brightness):
         # This won't be possible
-        if self.simulated:
-            return
-
         brightness = clamp(brightness, 0, 100)
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetBrightness',
