@@ -1,5 +1,8 @@
 from homeassistant.helpers.template import Template
 from homeassistant.exceptions import TemplateError
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
     for solar in page_data["PV"]:
