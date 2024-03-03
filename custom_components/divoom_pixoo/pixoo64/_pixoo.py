@@ -8,6 +8,9 @@ from PIL import Image, ImageOps
 from ._colors import Palette
 from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX
 
+import logging
+_LOGGER = logging.getLogger(__name__)
+
 def clamp(value, minimum=0, maximum=255):
     if value > maximum:
         return maximum
@@ -251,6 +254,9 @@ class Pixoo:
                 y_offset += height+1
                 x_offset = 0
                 continue
+            elif retrieve_glyph(character, font) is None:
+                _LOGGER.error("Unknown character '" + str(character) + "'.")
+                character = "?"
 
             self.draw_character(character, (x_offset + xy[0], y_offset + xy[1]), rgb, font)
             x_offset += retrieve_glyph(character, font)[-1] + 1
