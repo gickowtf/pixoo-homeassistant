@@ -55,6 +55,7 @@ class DivoomLight(LightEntity):
     def supported_color_modes(self) -> set[ColorMode] | set[str] | None:
         return {ColorMode.BRIGHTNESS}
 
+    @property
     def unique_id(self):
         return "light_" + str(self._config_entry.entry_id)
 
