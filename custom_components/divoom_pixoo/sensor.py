@@ -14,7 +14,7 @@ from homeassistant.helpers.template import Template, TemplateError
 
 from .const import DOMAIN, VERSION
 from .pages.solar import solar
-from .pixoo64._font import FONT_PICO_8, FONT_GICKO
+from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -126,6 +126,8 @@ class Pixoo64(Entity):
                         pixoo.draw_text(rendered_text, tuple(text['position']), tuple(text['font_color']), FONT_PICO_8)
                     if text['font'] == "FONT_GICKO":
                         pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']), FONT_GICKO)
+                    if text['font'] == "FIVE_PIX":
+                        pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']), FIVE_PIX)
                 pixoo.push()
 
             if "PV" in current_page_data:
