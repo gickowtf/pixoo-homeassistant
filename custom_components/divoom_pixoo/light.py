@@ -1,7 +1,6 @@
-from homeassistant.components.light import (LightEntity, ATTR_BRIGHTNESS, ColorMode)
+from homeassistant.components.light import (LightEntity, ATTR_BRIGHTNESS, SUPPORT_BRIGHTNESS, ColorMode)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.util.color import brightness_to_value, value_to_brightness
 
 from . import DOMAIN, VERSION
 
@@ -36,12 +35,17 @@ class DivoomLight(LightEntity):
     def is_on(self) -> bool | None:
         return self._state
 
+    @property
+    def brightness(self):
+        return self._brightness
+
     def turn_on(self, **kwargs):
+        if ATTR_BRIGHTNESS in kwargs:
+            self._brightness = kwargs[ATTR_BRIGHTNESS]
+            brightness_percent = int((self._brightness / 255.0) * 100)
+            self._pixoo.set_brightness(brightness_percent)
         self._state = True
         self._pixoo.set_screen(True)
-        if ATTR_BRIGHTNESS in kwargs:
-            val = brightness_to_value(BRIGHTNESS_SCALE, kwargs[ATTR_BRIGHTNESS])
-            self._pixoo.set_brightness(val)
 
     def turn_off(self, **kwargs):
         self._state = False
@@ -49,12 +53,14 @@ class DivoomLight(LightEntity):
 
     def update(self) -> None:
         self._state = self._pixoo.get_state()
-        self._brightness = value_to_brightness(BRIGHTNESS_SCALE, self._pixoo.get_brightness())
+        brightness_percent = self._pixoo.get_brightness()
+        self._brightness = int((brightness_percent / 100.0) * 255)
 
     @property
     def supported_color_modes(self) -> set[ColorMode] | set[str] | None:
         return {ColorMode.BRIGHTNESS}
 
+    @property
     def unique_id(self):
         return "light_" + str(self._config_entry.entry_id)
 

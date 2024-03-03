@@ -6,7 +6,7 @@ import requests
 from PIL import Image, ImageOps
 
 from ._colors import Palette
-from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8
+from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX
 
 def clamp(value, minimum=0, maximum=255):
     if value > maximum:
