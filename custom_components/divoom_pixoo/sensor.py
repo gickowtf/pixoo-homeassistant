@@ -111,7 +111,6 @@ class Pixoo64(Entity):
             if "images" in current_page_data:
                 for image in current_page_data["images"]:
                     pixoo.draw_image(image['image'], tuple(image['position']))
-                pixoo.push()
 
             if "texts" in current_page_data:
                 for text in current_page_data["texts"]:
@@ -126,10 +125,11 @@ class Pixoo64(Entity):
                         pixoo.draw_text(rendered_text, tuple(text['position']), tuple(text['font_color']), FONT_PICO_8)
                     if text['font'] == "FONT_GICKO":
                         pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']), FONT_GICKO)
-                pixoo.push()
 
             if "PV" in current_page_data:
                 solar(pixoo, self.hass, current_page_data, FONT_PICO_8, FONT_GICKO)
+
+            if "channel" not in current_page_data and "clockId" not in current_page_data:
                 pixoo.push()
 
         await self.hass.async_add_executor_job(update)
