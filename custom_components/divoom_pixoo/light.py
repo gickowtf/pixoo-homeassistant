@@ -1,7 +1,6 @@
 from homeassistant.components.light import (LightEntity, ATTR_BRIGHTNESS, SUPPORT_BRIGHTNESS, ColorMode)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.util.color import brightness_to_value, value_to_brightness
 
 from . import DOMAIN, VERSION
 
