@@ -8,6 +8,9 @@ from PIL import Image, ImageOps
 from ._colors import Palette
 from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX
 
+import logging
+_LOGGER = logging.getLogger(__name__)
+
 def clamp(value, minimum=0, maximum=255):
     if value > maximum:
         return maximum
@@ -240,10 +243,23 @@ class Pixoo:
     def draw_text(self, text, xy=(0, 0), rgb=Palette.WHITE, font=None):
         if font is None:
             font = FONT_PICO_8
-        matrix = 0
+
+        x_offset, y_offset = 0, 0
         for index, character in enumerate(text):
-            self.draw_character(character, (matrix + xy[0], xy[1]), rgb, font)
-            matrix += retrieve_glyph(character, font)[-1] + 1
+            if character == "\n":
+                # Since for now every character is at least smaller than the '0', this works.
+                dummy_char = retrieve_glyph("0", font)
+                height = int( (len(dummy_char)-1) / dummy_char[-1] )
+
+                y_offset += height+1
+                x_offset = 0
+                continue
+            elif retrieve_glyph(character, font) is None:
+                _LOGGER.error("Unknown character '" + str(character) + "'.")
+                character = "?"
+
+            self.draw_character(character, (x_offset + xy[0], y_offset + xy[1]), rgb, font)
+            x_offset += retrieve_glyph(character, font)[-1] + 1
 
     def draw_text_at_location_rgb(self, text, x, y, r, g, b):
         self.draw_text(text, (x, y), (r, g, b))
