@@ -94,7 +94,7 @@ In the large text field below, enter the configuration
 **There is no limit to the maximum newlines except for 64 pixels ;)**
 
 **Example:** `text: Gicko{{\n}}Github`
-or another Example: `text: {{ states.*.state }}{{\n}}{{ states.*.state }}
+or another Example: `text: {{ states.*.state }}{{\n}}{{ states.*.state }}`
 
 <br>
 
