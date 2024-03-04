@@ -53,7 +53,7 @@ In the large text field below, enter the configuration
     - number: 39
 ```
 
-## all options for configuration.yaml
+## all options for configuration
 
 ### Basic settings required
 
@@ -63,22 +63,45 @@ In the large text field below, enter the configuration
 
 <br>
 
-<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/XY.png?raw=true" title="Example XY axis"  height="300" />
+--------------
+
+<br>
+
 
 ### Page setting, here you can be creative and insert as much text and images as you like.
 
-| **Keywords**   | **Values**                                                                                 |
-|:---------------|:-------------------------------------------------------------------------------------------|
-| texts          | required                                                                                   |
-| text           | Currently, only the status of a sensor is possible or a free text combined with the status |
-| position       | The text position on a XY axis at 64x64 pixel                                              |
-| font           | at this time there are two different Fonts FONT_GICKO and FONT_PICO_8                      |
-| font_color     | RGB colors                                                                                 |
-| images         | not required                                                                               |
-| image          | Path to the image including file name .png preferred                                       |
-| position       | The text position on a XY axis at 64x64 pixel                                              |
+| **Keywords**   | **Values**                                                            |
+|:---------------|:----------------------------------------------------------------------|
+| texts          | required                                                              |
+| text           | using templates or string - \n newline support                        |
+| position       | The text position on a XY axis at 64x64 pixel                         |
+| font           | at this time there are two different Fonts FONT_GICKO and FONT_PICO_8 |
+| font_color     | RGB colors                                                            |
+| images         | not required                                                          |
+| image          | Path to the image including file name .png preferred                  |
+| position       | The text position on a XY axis at 64x64 pixel                         |
 
 <br>
+
+### Position on XY axis
+
+<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/XY.png?raw=true" title="Example XY axis"  height="300" />
+
+
+### Newline Support
+
+**Newline Support** in text with ```{{\n}}```
+**There is no limit to the maximum newlines except for 64 pixels ;)**
+
+**Example:** `text: Gicko{{\n}}Github`
+or another Example: `text: {{ states.*.state }}{{\n}}{{ states.*.state }}
+
+<br>
+
+--------------
+
+<br>
+
 
 
 ### Photovoltaic setting a self-designed design. The icon changes depending on the battery capacity and the font color changes from red to green
@@ -93,6 +116,11 @@ In the large text field below, enter the configuration
 | vomNetz         | -required     use {{ template }}   | Current consumption from grid or feed-in                                                                                                                                |
 | time            | -required     use {{ template }}   | Current time example: {{ now().strftime("%H:%M") }}                                                                                                                     |
 
+
+<br>
+
+--------------
+
 <br>
 
 
@@ -101,6 +129,10 @@ In the large text field below, enter the configuration
 |:----------------|:---------------------------------------------|
 | channel         | Custom Channel in APP                        |
 | number          | 0 = channel 1, 1 = channel 2, 2 = channel 3  |
+
+<br>
+
+--------------
 
 <br>
 
@@ -114,7 +146,11 @@ If you have any further questions, I will be happy to help.
 
 <br>
 
-### Automation Example
+--------------
+
+<br>
+
+## Automation Example
 
 You can use it for Push Notifications.
 Trigger with anything!
@@ -144,27 +180,56 @@ The path to the images to display. Example: [ "/config/custom_components/divoom_
 **Image positions**
 The positions of the images. Example: [[1,30], [20,30]]
 
+<br>
+
+--------------
+
+<br>
 
 ## Font
-| **FONT**    | **IMAGE**                                                                                                                  |
-|:------------|:---------------------------------------------------------------------------------------------------------------------------|
-| FONT_GICKO  | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true" title="FONT_GICKO" />  |
+| **FONT**     | **IMAGE**                                                                                                                 |
+|:-------------|:--------------------------------------------------------------------------------------------------------------------------|
+| FONT_GICKO   | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true" title="FONT_GICKO" /> |
+| FIVE_PIX     | *Image available soon*                                                                                                    |
+| FONT_PICO_8  | *Image available soon*                                                                                                    |
 
+<br>
 
+--------------
+
+<br>
 
 ## Issues
 
 Sometimes the display crashes, especially with animated images. I have often read on the Internet that this is due to the power supply being too weak or the brightness being too high. I now have the display permanently set to **90%** and it no longer crashes.
+
+<br>
+
+--------------
+
+<br>
 
 ## Discussions
 
 I would be happy if you present your configuration.yaml in the Discussions area  
 https://github.com/gickowtf/pixoo-homeassistant/discussions
 
+<br>
+
+--------------
+
+<br>
+
 ## Disclaimer
 This is not official software from Divoom.
 It is a custom integration created by me (gickowtf) and therefore Divoom is not responsible for any damages/problems caused by this integration, nor does Divoom provide any end-user support for the integration.
 Use this integration at your own risk.
+
+<br>
+
+--------------
+
+<br>
 
 ## ❤️ Many thanks to
 @Mrredstone5230 - Thanks for the conversion to config flow
