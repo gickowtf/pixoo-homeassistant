@@ -1,3 +1,3 @@
 DOMAIN = "divoom_pixoo"
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 CURRENT_ENTRY_VERSION = 1

@@ -14,7 +14,8 @@ from homeassistant.helpers.template import Template, TemplateError
 
 from .const import DOMAIN, VERSION
 from .pages.solar import solar
-from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX
+from .pages.fuel import fuel
+from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -130,6 +131,9 @@ class Pixoo64(Entity):
 
             if "PV" in current_page_data:
                 solar(pixoo, self.hass, current_page_data, FONT_PICO_8, FONT_GICKO)
+
+            if "Fuel" in current_page_data:
+                fuel(pixoo, self.hass, current_page_data, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)
 
             if "channel" not in current_page_data and "clockId" not in current_page_data:
                 pixoo.push()

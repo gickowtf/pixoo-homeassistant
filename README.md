@@ -123,6 +123,56 @@ or another Example: `text: {{ states.*.state }}{{\n}}{{ states.*.state }}`
 
 <br>
 
+### Gas Station 
+#### Special Page. Helper entities may have to be used here
+
+<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/gasstation.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" />
+<br>
+
+
+
+| **Keywords** | **Values**                                |                                                                                                                                                                                      |
+|:-------------|:------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Fuel**     | own designed price board for Gas Stations | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/gasstation_preview.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" /> |
+| title        | -required use {{ template }}              | Title e.g. Gas Station Name                                                                                                                                                          |
+| name1        | -required     use {{ template }}          | e.g. fuel type                                                                                                                                                                       |
+| price1       | -required     use {{ template }}          | fuel price                                                                                                                                                                           |
+| name2        | -required     use {{ template }}          | e.g. fuel type                                                                                                                                                                       |
+| price2       | -required     use {{ template }}          | fuel price                                                                                                                                                                           |
+| name3        | -required     use {{ template }}          | e.g. fuel type                                                                                                                                                                       |
+| price3       | -required     use {{ template }}          | fuel price                                                                                                                                                                           |
+| status       | -required     use {{ template }}          | Any extra field in my case an opening status                                                                                                                                         |
+|              |                                           |                                                                                                                                                                                      |
+| font_color   | -optional     use [R, G, B]               | RGB Color #default white                                                                                                                                                             |
+| bg_color     | -optional     use [R, G, B]               | RGB Color #default yellow (255, 230, 0)                                                                                                                                              |
+| price_color  | -optional     use [R, G, B]               | RGB Color #default white                                                                                                                                                             |
+| title_color  | -optional     use [R, G, B]               | RGB Color #default black                                                                                                                                                             |
+| stripe_color | -optional     use [R, G, B]               | RGB Color #default font_color                                                                                                                                                        |
+| title_offset | -optional     use an int                  | to center the text #default 2                                                                                                                                                        |
+
+Example of the image:
+```
+- page: 1
+  Fuel:
+    - title: Classic
+      name1: Diesel
+      price1: "{{ states.sensor.classic_diesel.state }}"
+      name2: Super
+      price2: "{{ states.sensor.classic_super.state }}"
+      name3: E10
+      price3: "{{ states.sensor.classic_e10.state }}"
+      status: >-
+        {% if is_state('binary_sensor.status', 'on') %}
+        Open {% else %} Closed {% endif %}
+      title_offset: 10
+```
+
+<br>
+
+--------------
+
+<br>
+
 
 ### Custom Channel - In Divoom app you can set three different custom channels which you can select here. 
 | **Keywords**    | **Values**                                   |
@@ -187,11 +237,11 @@ The positions of the images. Example: [[1,30], [20,30]]
 <br>
 
 ## Font
-| **FONT**     | **IMAGE**                                                                                                                 |
-|:-------------|:--------------------------------------------------------------------------------------------------------------------------|
-| FONT_GICKO   | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true" title="FONT_GICKO" /> |
-| FIVE_PIX     | *Image available soon*                                                                                                    |
-| FONT_PICO_8  | *Image available soon*                                                                                                    |
+| **FONT**    | **IMAGE**                                                                                                                 |
+|:------------|:--------------------------------------------------------------------------------------------------------------------------|
+| FONT_GICKO  | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true" title="FONT_GICKO" /> |
+| FIVE_PIX    | *Image available soon*                                                                                                    |
+| FONT_PICO_8 | *Image available soon*                                                                                                    |
 
 <br>
 

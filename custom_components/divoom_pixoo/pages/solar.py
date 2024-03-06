@@ -18,6 +18,16 @@ def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
             _LOGGER.error("Template render error: %s", e)
             return  # Stop execution if there is a template error
 
+        image_folder = "/config/custom_components/divoom_pixoo/img/"
+
+        battery_images = [
+            (image_folder + "akku00-20.png", 0),
+            (image_folder + "akku20-40.png", 20),
+            (image_folder + "akku40-60.png", 40),
+            (image_folder + "akku60-80.png", 60),
+            (image_folder + "akku80-100.png", 80)
+        ]
+
         green = (4, 204, 2) #discharge
         red = (255, 0, 68) #discharge
         grey = (131, 131, 131) #power vomNetz
@@ -29,7 +39,7 @@ def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
         pixoo.draw_text(rendered_time, (44, 1), white, FONT_PICO_8)
 
         #Power
-        pixoo.draw_image("/config/custom_components/divoom_pixoo/img/sunpower.png", (1, 0))
+        pixoo.draw_image(image_folder + "sunpower.png", (1, 0))
 
         if rendered_power >= 1:
             pixoo.draw_text(f'{rendered_power}', (17, 8), yellow, FONT_GICKO)
@@ -41,21 +51,15 @@ def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
         else:
             pixoo.draw_text(f'{rendered_discharge}', (17, 18), green, FONT_GICKO)
 
-        if rendered_storage >= 0:
-            pixoo.draw_image("/config/custom_components/divoom_pixoo/img/akku00-20.png", (1, 16))
-        if rendered_storage >= 20:
-            pixoo.draw_image("/config/custom_components/divoom_pixoo/img/akku20-40.png", (1, 16))
-        if rendered_storage >= 40:
-            pixoo.draw_image("/config/custom_components/divoom_pixoo/img/akku40-60.png", (1, 16))
-        if rendered_storage >= 60:
-            pixoo.draw_image("/config/custom_components/divoom_pixoo/img/akku60-80.png", (1, 16))
-        if rendered_storage >= 80:
-            pixoo.draw_image("/config/custom_components/divoom_pixoo/img/akku80-100.png", (1, 16))
+        for image_path, threshold in battery_images:
+            if rendered_storage >= threshold:
+                pixoo.draw_image(image_path, (1, 16))
+                break
 
-        pixoo.draw_text(f"{rendered_storage}%", (17, 25), white, FONT_PICO_8) #FONT_PICO_8
+        pixoo.draw_text(f"{rendered_storage}%", (17, 25), white, FONT_PICO_8)
 
-        pixoo.draw_image("/config/custom_components/divoom_pixoo/img/haus.png", (1, 32))
+        pixoo.draw_image(image_folder + "haus.png", (1, 32))
         pixoo.draw_text(f"{rendered_powerhousetotal}", (17, 40), blue, FONT_GICKO)
 
-        pixoo.draw_image("/config/custom_components/divoom_pixoo/img/industry.png", (1, 48))
+        pixoo.draw_image(image_folder + "industry.png", (1, 48))
         pixoo.draw_text(f'{rendered_vomNetz}', (17, 56), grey, FONT_GICKO)
