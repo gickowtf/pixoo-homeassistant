@@ -194,6 +194,26 @@ Example of the image:
 
 If you have any further questions, I will be happy to help.
 
+
+> My variant to get the correct number is to ask for it via post request. i use postman and make this request
+
+```
+POST http://pixoo64IP:80/post
+```
+
+**Header:**
+```
+{
+"Command":"Channel/GetAllConf"
+}
+```
+> if you now set the desired clock face in the app and then send the request, you will receive a response:
+
+```
+{.....,"CurClockId": 182,.....}
+```
+
+
 <br>
 
 --------------
