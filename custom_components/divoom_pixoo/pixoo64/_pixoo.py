@@ -361,10 +361,8 @@ class Pixoo:
             'Command': 'Channel/GetAllConf'
         }), timeout=self.timeout)
         data = response.json()
-        if data['LightSwitch'] == 1:
-            return True
-        else:
-            return False
+        _LOGGER.debug("Device Data (" + str(self.address) + "): " + str(data))
+        return data['LightSwitch'] == 1
 
     def get_brightness(self):
         response = requests.post(self.__url, json.dumps({

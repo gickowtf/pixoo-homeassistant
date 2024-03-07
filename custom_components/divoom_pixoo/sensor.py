@@ -53,7 +53,7 @@ class Pixoo64(Entity):
         self._attr_name = 'Current Page'
         self._attr_extra_state_attributes = {}
         self._attr_extra_state_attributes['page'] = self._current_page['page']
-        _LOGGER.debug(self._pages)
+        _LOGGER.debug("All pages for %s: %s", self._pixoo.address, self._pages)
         self.showing_notification = False
 
     async def async_added_to_hass(self):
@@ -73,7 +73,7 @@ class Pixoo64(Entity):
             self._update_interval = None
 
     async def _async_update(self, now=None):
-        _LOGGER.debug("Update called at %s", now)
+        _LOGGER.debug("Update called at %s for %s", now, self._pixoo.address)
         await self._async_update_data()
 
     async def _async_update_data(self):
@@ -82,7 +82,7 @@ class Pixoo64(Entity):
 
         self._current_page = self._pages[self._current_page_index]
         current_page_data = self._pages[self._current_page_index]
-        _LOGGER.debug(f"current page: {current_page_data}")
+        _LOGGER.debug(f"Current page ({self._pixoo.address}): {current_page_data}")
         self._attr_extra_state_attributes['page'] = current_page_data['page']
 
         if 'condition_template' in current_page_data:
@@ -152,7 +152,7 @@ class Pixoo64(Entity):
         def draw():
             pixoo = self._pixoo
             pixoo.clear()
-            _LOGGER.debug("Service called for %s.", self._config_entry.title)
+            _LOGGER.debug("Service called for %s (%s)", self._config_entry.title, self._pixoo.address)
 
             for img, img_pos in zip(images, image_positions):
                 pixoo.draw_image(img, tuple(img_pos))
