@@ -14,8 +14,7 @@ Custom component for easy use of a Pixoo64 within Home Assistant. With this inte
 repository into the `custom_components/pixoo-homeassistant` directory.
 2. Restart Home Assistant.
 3. Go to Settings / Integrations and add integration "Divoom Pixoo 64"
-4. In the following window you can now enter the IP of your device and the update interval.
-In the large text field below, enter the configuration
+4. Please select a discovered Pixoo 64 device from the list or select 'Manual IP' to manually enter the device's IP.
 
 
 ### configuration List of pages in JSON *:
