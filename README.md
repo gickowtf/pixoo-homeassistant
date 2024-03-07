@@ -194,24 +194,13 @@ Example of the image:
 
 If you have any further questions, I will be happy to help.
 
+### To find out the number of the ClockFace, you can proceed as follows.
+1. First go to the settings and activate debug logging in the Divoom Pixoo 64 integration.
+2. Now open the Divoom app on your smartphone and select your preferred ClockFace.
+3. As soon as this is displayed on your Pixoo64, you will find "Device Data" in the log and then "CurClockId".
+4. The CurClockId is the number you were looking for.
 
-> My variant to get the correct number is to ask for it via post request. i use postman and make this request
 
-```
-POST http://pixoo64IP:80/post
-```
-
-**Body:**
-```
-{
-"Command":"Channel/GetAllConf"
-}
-```
-> if you now set the desired clock face in the app and then send the request, you will receive a response:
-
-```
-{.....,"CurClockId": 182,.....}
-```
 
 
 <br>
