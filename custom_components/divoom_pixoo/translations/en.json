@@ -3,6 +3,13 @@
     "config": {
         "step": {
             "user": {
+                "title": "Auto-discovered devices",
+                "description": "Please select a discovered Pixoo 64 device from the list or select 'Manual IP' to manually enter the device's IP.",
+                "data": {
+                    "selector": "Select the device to setup"
+                }
+            },
+            "config": {
                 "title": "Configure your new Pixoo device",
                 "description": "Please enter the IP address of your Pixoo device.",
                 "data": {
@@ -23,7 +30,7 @@
     },
     "options": {
         "step": {
-            "user": {
+            "config": {
                 "title": "Configure your Pixoo device",
                 "description": "Update your existing Pixoo device",
                 "data": {

@@ -1,7 +1,9 @@
+import requests
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, OptionsFlow
 from homeassistant.helpers.selector import ObjectSelector, ObjectSelectorConfig, TextSelector, TextSelectorConfig, \
-    DurationSelector, DurationSelectorConfig, NumberSelector, NumberSelectorConfig, NumberSelectorMode
+    DurationSelector, DurationSelectorConfig, NumberSelector, NumberSelectorConfig, NumberSelectorMode, SelectSelector, \
+    SelectSelectorConfig, SelectSelectorMode
 
 from .const import DOMAIN, CURRENT_ENTRY_VERSION
 import voluptuous as vol
@@ -12,6 +14,10 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 
+def get_lan_devices():
+    return requests.get("https://app.divoom-gz.com/Device/ReturnSameLANDevice", timeout=5).json()
+
+
 class ConfigFlowHandler(config_entries.ConfigFlow, config_entries.OptionsFlow, domain=DOMAIN):
     VERSION = CURRENT_ENTRY_VERSION  # Version for new entries. Managed by HA
 
@@ -20,8 +26,45 @@ class ConfigFlowHandler(config_entries.ConfigFlow, config_entries.OptionsFlow, d
                                                                         "pages_data": [{'page': 1, 'PV': [{'power': '{{ states.sensor.YOUR_SENSOR.state }}', 'storage': '{{ states.sensor.YOUR_SENSOR.state }}', 'discharge': '{{ states.sensor.YOUR_SENSOR.state }}', 'powerhousetotal': '{{ states.sensor.YOUR_SENSOR.state }}', 'vomNetz': '{{ states.sensor.YOUR_SENSOR.state }}', 'time': "{{ now().strftime('%H:%M') }}"}]}, {'page': 2, 'texts': [{'text': 'github/gickowtf', 'position': [0, 10], 'font': 'FONT_PICO_8', 'font_color': [255, 0, 0]}, {'text': 'Thx 4 Support', 'position': [0, 30], 'font': 'FONT_PICO_8', 'font_color': [255, 0, 0]}], 'images': [{'image': '/config/custom_components/divoom_pixoo/img/haus.png', 'position': [30, 10]}]}, {'page': 3, 'channel': [{'number': 2}]}, {'page': 4, 'clockId': [{'number': 39}]}]}
 
     async def async_step_user(self, user_input: dict = None):
+        # Called when the user creates a new entry. This will open a page with discovered new devices if there's any.
+        if user_input:
+            return await self.async_step_config({"ip_address": user_input["selector"] if not user_input["selector"] == "manual" else "", "dont_test": True})
+
+        try:
+            response = await self.hass.async_add_executor_job(get_lan_devices)
+            _LOGGER.debug("Discovery data: %s", response)
+
+            devices = []
+            for device in response["DeviceList"]:
+                if await self.verify_unique_device(device["DevicePrivateIP"]):
+                    devices.append({"value": device["DevicePrivateIP"], "label": device["DeviceName"] + " (" + device["DevicePrivateIP"] + ")"})
+
+            if len(devices) == 0:
+                # No new device was found, manual config
+                return await self.async_step_config()
+
+            devices.append({"value": "manual", "label": "Manual IP"})
+
+            return self.async_show_form(
+                step_id="user", data_schema=vol.Schema({
+                    vol.Required("selector"): SelectSelector(
+                        SelectSelectorConfig(
+                            mode=SelectSelectorMode.LIST,
+                            options=devices,
+                            multiple=False,
+
+                        )
+                    )
+                })
+            )
+
+        except Exception as e:
+            _LOGGER.error(e)
+        return await self.async_step_config()
+
+    async def async_step_config(self, user_input: dict = None):
         errors = {}
-        if user_input is not None:
+        if user_input is not None and not user_input.get("dont_test", False):
             try:
                 pix = await self.hass.async_add_executor_job(load_pixoo, user_input.get('ip_address'))
                 if await self.verify_unique_device(user_input.get('ip_address')):
@@ -35,10 +78,10 @@ class ConfigFlowHandler(config_entries.ConfigFlow, config_entries.OptionsFlow, d
                 _LOGGER.error("Error setting up Pixoo: %s", e)
                 errors["ip_address"] = "connection"
         else:
-            user_input = {}
+            user_input = {} if user_input is None else user_input
 
         return self.async_show_form(
-            step_id="user", errors=errors, data_schema=vol.Schema({
+            step_id="config", errors=errors, data_schema=vol.Schema({
                 vol.Required("ip_address",
                              default=user_input.get("ip_address", self.entry_options.get("ip_address"))): str,
                 vol.Required("scan_interval", default=user_input.get("scan_interval", self.entry_options.get(
@@ -60,7 +103,7 @@ class ConfigFlowHandler(config_entries.ConfigFlow, config_entries.OptionsFlow, d
 
     async def async_step_init(self, user_input=None):
         # This is set since the Option Flow's first step is always init.
-        return await self.async_step_user(user_input)
+        return await self.async_step_config(user_input)
 
     async def verify_unique_device(self, ip_address: str):
         """Check if the device is already configured."""
