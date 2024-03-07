@@ -201,7 +201,7 @@ If you have any further questions, I will be happy to help.
 POST http://pixoo64IP:80/post
 ```
 
-**Header:**
+**Body:**
 ```
 {
 "Command":"Channel/GetAllConf"
