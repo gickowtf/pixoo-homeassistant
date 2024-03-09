@@ -131,9 +131,8 @@ class Pixoo64(Entity):
             self.schedule_update_ha_state()
 
             try:
-                is_enabled = str(Template(self.page['enable'], self.hass).async_render())
+                is_enabled = str(Template(self.page['enable'], self.hass).async_render()) if 'enable' in self.page else "true"
                 is_enabled = is_enabled.lower() in ['true', 'yes', '1', 'on']
-                _LOGGER.info(f"Template? = {self.page['enable']}")
             except TemplateError as e:
                 _LOGGER.error(f"Error rendering enable template: {e}")
                 is_enabled = False
