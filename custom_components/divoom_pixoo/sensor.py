@@ -124,6 +124,7 @@ class Pixoo64(Entity):
                 pixoo.push()
 
         page_displayed = False
+        initial_index = self._current_page_index
 
         while not page_displayed:
             self.page = self._pages[self._current_page_index]
@@ -145,7 +146,7 @@ class Pixoo64(Entity):
             else:
                 _LOGGER.info(f"No it is False!")
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
-                if self.page == initial_index:
+                if self._current_page_index == initial_index:
                     break
 
     async def async_show_message(self, messages, positions, colors, fonts, images=None, image_positions=None, info_text=None, info_images=None):
