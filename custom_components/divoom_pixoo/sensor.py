@@ -51,7 +51,7 @@ class Pixoo64(Entity):
         self._attr_has_entity_name = True
         self._attr_name = 'Current Page'
         self._attr_extra_state_attributes = {}
-        self._attr_extra_state_attributes['page'] = self._current_page['page']
+        self._attr_extra_state_attributes['page'] = self._current_page_index
         _LOGGER.debug("All pages for %s: %s", self._pixoo.address, self._pages)
         self.showing_notification = False
 
@@ -73,80 +73,81 @@ class Pixoo64(Entity):
 
     async def _async_update(self, now=None):
         _LOGGER.debug("Update called at %s for %s", now, self._pixoo.address)
-        await self._async_update_data()
+        await self._async_next_page()
 
-    async def _async_update_data(self):
+    async def _async_next_page(self):
         if self.showing_notification:
             return
 
-        def update():
-            pixoo = self._pixoo
-            pixoo.clear()
+        if len(self._pages) == 0:
+            return
 
-            if "channel" in self.page:
-                for ch in self.page["channel"]:
-                    pixoo.set_custom_page(ch['number'])
-
-            if "clockId" in self.page:
-                for clock in self.page["clockId"]:
-                    pixoo.set_clock(clock['number'])
-
-            if "images" in self.page:
-                for image in self.page["images"]:
-                    pixoo.draw_image(image['image'], tuple(image['position']))
-
-            if "texts" in self.page:
-                for text in self.page["texts"]:
-                    text_template = Template(text['text'], self.hass)
-                    try:
-                        rendered_text = str(text_template.async_render())
-                    except TemplateError as e:
-                        _LOGGER.error("Template render error: %s", e)
-                        rendered_text = "Template Error"
-
-                    if text['font'] == "FONT_PICO_8":
-                        pixoo.draw_text(rendered_text, tuple(text['position']), tuple(text['font_color']), FONT_PICO_8)
-                    if text['font'] == "FONT_GICKO":
-                        pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']),
-                                        FONT_GICKO)
-                    if text['font'] == "FIVE_PIX":
-                        pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']), FIVE_PIX)
-
-            if "PV" in self.page:
-                solar(pixoo, self.hass, self.page, FONT_PICO_8, FONT_GICKO)
-
-            if "Fuel" in self.page:
-                _LOGGER.info(f"Fuel = {self.page}")
-                _LOGGER.info(f"Fuel = {self.page['Fuel']}")
-                fuel(pixoo, self.hass, self.page, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)
-
-            if "channel" not in self.page and "clockId" not in self.page:
-                pixoo.push()
-
-        page_displayed = False
         initial_index = self._current_page_index
-
-        while not page_displayed:
+        is_enabled = None
+        while not is_enabled:
             self.page = self._pages[self._current_page_index]
             self.schedule_update_ha_state()
 
             try:
-                is_enabled = str(Template(self.page['enable'], self.hass).async_render()) if 'enable' in self.page else "true"
+                is_enabled = str(Template(str(self.page.get('enabled', 'true')), self.hass).async_render())
                 is_enabled = is_enabled.lower() in ['true', 'yes', '1', 'on']
             except TemplateError as e:
                 _LOGGER.error(f"Error rendering enable template: {e}")
                 is_enabled = False
 
             if is_enabled:
-                _LOGGER.info(f"Yes it is True!")
-                await self.hass.async_add_executor_job(update)
+                await self.hass.async_add_executor_job(self._render_page, self.page)
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
-                page_displayed = True
             else:
-                _LOGGER.info(f"No it is False!")
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
                 if self._current_page_index == initial_index:
+                    _LOGGER.info("All pages disabled. Not updating.")
                     break
+
+    def _render_page(self, page):
+        pixoo = self._pixoo
+        pixoo.clear()
+
+        if "channel" in page:
+            for ch in page["channel"]:
+                pixoo.set_custom_page(ch['number'])
+
+        if "clockId" in page:
+            for clock in page["clockId"]:
+                pixoo.set_clock(clock['number'])
+
+        if "images" in page:
+            for image in page["images"]:
+                pixoo.draw_image(image['image'], tuple(image['position']))
+
+        if "texts" in page:
+            for text in page["texts"]:
+                text_template = Template(text['text'], self.hass)
+                try:
+                    rendered_text = str(text_template.async_render())
+                except TemplateError as e:
+                    _LOGGER.error("Template render error: %s", e)
+                    rendered_text = "Template Error"
+
+                if text['font'] == "FONT_PICO_8":
+                    pixoo.draw_text(rendered_text, tuple(text['position']), tuple(text['font_color']), FONT_PICO_8)
+                if text['font'] == "FONT_GICKO":
+                    pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']),
+                                    FONT_GICKO)
+                if text['font'] == "FIVE_PIX":
+                    pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']), FIVE_PIX)
+
+        if "PV" in page:
+            solar(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO)
+
+        if "Fuel" in page:
+            _LOGGER.info(f"Fuel = {page}")
+            _LOGGER.info(f"Fuel = {page['Fuel']}")
+            fuel(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)
+
+        if "channel" not in page and "clockId" not in page:
+            pixoo.push()
+
 
     async def async_show_message(self, messages, positions, colors, fonts, images=None, image_positions=None, info_text=None, info_images=None):
         if not all([messages, positions, colors, fonts]) or len(messages) != len(positions) != len(colors) != len(fonts):
@@ -178,7 +179,7 @@ class Pixoo64(Entity):
 
     @property
     def state(self):
-        return self._current_page['page']
+        return self._current_page_index+1
 
     @property
     def entity_category(self):
