@@ -12,10 +12,12 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.template import Template, TemplateError
 
+from .pixoo64._colors import get_rgb, CSS4_COLORS
 from .const import DOMAIN, VERSION
 from .pages.solar import solar
 from .pages.fuel import fuel
 from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -108,44 +110,58 @@ class Pixoo64(Entity):
         pixoo = self._pixoo
         pixoo.clear()
 
-        if "channel" in page:
-            for ch in page["channel"]:
-                pixoo.set_custom_page(ch['number'])
-
-        if "clockId" in page:
-            for clock in page["clockId"]:
-                pixoo.set_clock(clock['number'])
-
-        if "images" in page:
-            for image in page["images"]:
-                pixoo.draw_image(image['image'], tuple(image['position']))
-
-        if "texts" in page:
-            for text in page["texts"]:
-                text_template = Template(text['text'], self.hass)
-                try:
-                    rendered_text = str(text_template.async_render())
-                except TemplateError as e:
-                    _LOGGER.error("Template render error: %s", e)
-                    rendered_text = "Template Error"
-
-                if text['font'] == "FONT_PICO_8":
-                    pixoo.draw_text(rendered_text, tuple(text['position']), tuple(text['font_color']), FONT_PICO_8)
-                if text['font'] == "FONT_GICKO":
-                    pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']),
-                                    FONT_GICKO)
-                if text['font'] == "FIVE_PIX":
-                    pixoo.draw_text(rendered_text.upper(), tuple(text['position']), tuple(text['font_color']), FIVE_PIX)
-
-        if "PV" in page:
+        if page['page_type'].lower() == "channel":
+            pixoo.set_custom_page(page['id'])
+        elif page['page_type'].lower() == "clock":
+            pixoo.set_clock(page['id'])
+        elif page['page_type'].lower() == "pv":
             solar(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO)
-
-        if "Fuel" in page:
+            pixoo.push()
+        elif page['page_type'].lower() == "fuel":
             _LOGGER.info(f"Fuel = {page}")
-            _LOGGER.info(f"Fuel = {page['Fuel']}")
             fuel(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)
+            pixoo.push()
+        elif page['page_type'].lower() == "custom" or page['page_type'].lower() == "components":
+            for component in page['components']:
 
-        if "channel" not in page and "clockId" not in page:
+                if component['type'] == "text":
+                    text_template = Template(component['content'], self.hass)
+                    try:
+                        rendered_text = str(text_template.async_render())
+                    except TemplateError as e:
+                        _LOGGER.error("Template render error: %s", e)
+                        rendered_text = "Template Error"
+
+                    font = FONT_PICO_8  # Font by default.
+                    if component['font'] == "PICO_8":
+                        font = FONT_PICO_8
+                    elif component['font'] == "GICKO":
+                        font = FONT_GICKO
+                    elif component['font'] == "FIVE_PIX":
+                        font = FIVE_PIX
+
+                    try:
+                        rendered_color = Template(str(component['color']), self.hass).async_render()
+                        if isinstance(rendered_color, list):
+                            rendered_color = tuple(rendered_color)
+                        elif rendered_color in CSS4_COLORS:
+                            rendered_color = get_rgb(rendered_color)
+                        else:
+                            rendered_color = get_rgb("white")
+
+                    except TemplateError as e:
+                        _LOGGER.error("Template render error: %s", e)
+                        rendered_color = get_rgb("white")
+
+                    pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font)
+
+                elif component['type'] == "image":
+                    try:
+                        rendered_image_path = Template(str(component['image_path']), self.hass).async_render()
+                        pixoo.draw_image(rendered_image_path, tuple(component['position']))
+                    except TemplateError as e:
+                        _LOGGER.error("Template render error: %s", e)
+
             pixoo.push()
 
 

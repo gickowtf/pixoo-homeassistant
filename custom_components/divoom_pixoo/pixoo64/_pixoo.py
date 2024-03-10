@@ -5,7 +5,7 @@ from enum import IntEnum
 import requests
 from PIL import Image, ImageOps
 
-from ._colors import Palette
+from ._colors import get_rgb
 from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX
 
 import logging
@@ -94,7 +94,7 @@ class Pixoo:
             self.__reset_counter()
 
 
-    def clear(self, rgb: object = Palette.BLACK) -> object:
+    def clear(self, rgb: object = get_rgb("black")) -> object:
         self.fill(rgb)
 
     def clear_rgb(self, r, g, b):
@@ -106,7 +106,7 @@ class Pixoo:
         self.draw_character(character, (x, y), (r, g, b))
 
     def draw_filled_rectangle(self, top_left_xy=(0, 0), bottom_right_xy=(1, 1),
-                              rgb=Palette.BLACK):
+                              rgb=get_rgb("black")):
         for y in range(top_left_xy[1], bottom_right_xy[1] + 1):
             for x in range(top_left_xy[0], bottom_right_xy[0] + 1):
                 self.draw_pixel((x, y), rgb)
@@ -165,7 +165,7 @@ class Pixoo:
                                image_resample_mode=ImageResampleMode.PIXEL_ART):
         self.draw_image(image_path_or_object, (x, y), image_resample_mode)
 
-    def draw_line(self, start_xy, stop_xy, rgb=Palette.WHITE):
+    def draw_line(self, start_xy, stop_xy, rgb=get_rgb("white")):
         line = set()
 
         # Calculate the amount of steps needed between the points to draw a nice line
@@ -228,7 +228,7 @@ class Pixoo:
     def draw_pixel_at_location_rgb(self, x, y, r, g, b):
         self.draw_pixel((x, y), (r, g, b))
 
-    def draw_character(self, character, xy=(0, 0), rgb=Palette.WHITE, font=None):
+    def draw_character(self, character, xy=(0, 0), rgb=get_rgb("white"), font=None):
         if font is None:
             font = FONT_PICO_8
         matrix = retrieve_glyph(character, font)
@@ -240,7 +240,7 @@ class Pixoo:
                     local_y = int(index / teiler)
                     self.draw_pixel((xy[0] + local_x, xy[1] + local_y), rgb)
 
-    def draw_text(self, text, xy=(0, 0), rgb=Palette.WHITE, font=None):
+    def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None):
         if font is None:
             font = FONT_PICO_8
 
@@ -264,7 +264,7 @@ class Pixoo:
     def draw_text_at_location_rgb(self, text, x, y, r, g, b):
         self.draw_text(text, (x, y), (r, g, b))
 
-    def fill(self, rgb=Palette.BLACK):
+    def fill(self, rgb=get_rgb("black")):
         self.__buffer = []
         rgb = clamp_color(rgb)
         for index in range(self.pixel_count):
@@ -276,7 +276,7 @@ class Pixoo:
     def push(self):
         self.__send_buffer()
 
-    def send_text(self, text, xy=(0, 0), color=Palette.WHITE, identifier=1,
+    def send_text(self, text, xy=(0, 0), color=get_rgb("white"), identifier=1,
                   font=2, width=64,
                   movement_speed=0,
                   direction=TextScrollDirection.LEFT):
