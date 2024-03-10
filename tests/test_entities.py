@@ -6,18 +6,34 @@ from homeassistant.config_entries import ConfigEntry
 from custom_components.divoom_pixoo import Pixoo
 from custom_components.divoom_pixoo.light import DivoomLight
 
+
 class DummyPixoo(Pixoo):
 
     def __init__(self):
-        pass
+        self.calls = []
+        self.args = []
+
+    def set_screen(self, arg):
+        self.calls.append('set_screen')
+        self.args.append(arg)
+
+    def received(self, message, arg=None):
+        received_index = self.calls.index(message)
+        if arg is None:
+            return received_index > -1
+        arg_val = self.args[received_index]
+        return arg_val == arg
+
+
 
 
 class TestDivoomLight(unittest.TestCase):
 
     def setUp(self):
-        test_config = ConfigEntry(entry_id='', domain='', title='', data='', options='', version='',
-                                  minor_version=0, source='')
-        self.light = DivoomLight(pixoo=DummyPixoo(), config_entry=test_config)
+        test_config = ConfigEntry(entry_id='', domain='', title='', data='', options='', version='', minor_version=0,
+                                  source='')
+        self.device = DummyPixoo()
+        self.light = DivoomLight(pixoo=self.device, config_entry=test_config)
 
     def test_name(self):
         self.assertEqual("Light", self.light.name)
@@ -44,17 +60,14 @@ class TestDivoomLight(unittest.TestCase):
         self.light.turn_on(brightness=37)
         self.assertTrue(self.light.is_on)
         self.assertEqual(37, self.light.brightness)
-    def test_turn_off(self):
+
+    def test_turn_off(self): #TODO: don't call it device, that's a loaded term in HA
         self.light.turn_off()
         self.assertFalse(self.light.is_on)
+        self.assertTrue(self.device.received('set_screen', False))
 
     def test_update(self):
         # TODO: updates the entity from the pixoo
         self.assertTrue(False)
 
-
-
-        #TODO
-        # class TestSensor(unittest.TestCase):
-        #     def test_name(self):
-        #         def test_device_info(self):
+        # TODO  # class TestSensor(unittest.TestCase):  #     def test_name(self):  #         def test_device_info(self):
