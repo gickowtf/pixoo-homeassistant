@@ -1,21 +1,17 @@
 import unittest
 from unittest.mock import Mock
 
+from homeassistant.components.light import ColorMode
 from homeassistant.config_entries import ConfigEntry
 
-from custom_components.divoom_pixoo import Pixoo
+from custom_components.divoom_pixoo import DOMAIN, VERSION
 from custom_components.divoom_pixoo.light import DivoomLight
-
-
-
-
-
 
 
 class TestDivoomLight(unittest.TestCase):
 
     def setUp(self):
-        test_config = ConfigEntry(entry_id='', domain='', title='', data='', options='', version='', minor_version=0,
+        test_config = ConfigEntry(entry_id='', domain='', title='', data='', options='', version=0, minor_version=0,
                                   source='')
         self.pixoo = Mock()
         self.light = DivoomLight(pixoo=self.pixoo, config_entry=test_config)
@@ -28,14 +24,6 @@ class TestDivoomLight(unittest.TestCase):
 
     def test_default_brightness(self):
         self.assertIsNone(self.light.brightness)
-
-    def test_unique_id(self):
-        self.assertTrue(self.light.unique_id.startswith("light_"))
-
-    def test_device_info(self):
-        device_info = self.light.device_info
-        self.assertEqual("Divoom", device_info['manufacturer'])
-        self.assertEqual("Pixoo", device_info['model'])
 
     def test_turn_on(self):
         self.light.turn_on()
@@ -62,4 +50,20 @@ class TestDivoomLight(unittest.TestCase):
         self.assertTrue(self.light.is_on)
         self.assertEqual(255, self.light.brightness)
 
-        # TODO  # class TestSensor(unittest.TestCase):  #     def test_name(self):  #         def test_device_info(self):
+    def test_supported_color_modes(self):
+        self.assertEqual(ColorMode.BRIGHTNESS, self.light.supported_color_modes.pop())
+
+    def test_unique_id(self):
+        self.assertTrue(self.light.unique_id.startswith("light_"))
+
+    def test_device_info(self):
+        device_info = self.light.device_info
+        identifiers = device_info["identifiers"].pop()
+        self.assertEqual(DOMAIN, identifiers[0])
+        self.assertRegex(identifiers[1], r'^[a-zA-Z0-9]{32}$')
+        self.assertEqual("", device_info["name"])
+        self.assertEqual("Divoom", device_info['manufacturer'])
+        self.assertEqual("Pixoo", device_info['model'])
+        self.assertEqual(VERSION, device_info['sw_version'])
+
+
