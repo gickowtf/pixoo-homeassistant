@@ -1,28 +1,13 @@
 import unittest
+from unittest.mock import Mock
 
-from homeassistant.components.light import ATTR_BRIGHTNESS
 from homeassistant.config_entries import ConfigEntry
 
 from custom_components.divoom_pixoo import Pixoo
 from custom_components.divoom_pixoo.light import DivoomLight
 
 
-class DummyPixoo(Pixoo):
 
-    def __init__(self):
-        self.calls = []
-        self.args = []
-
-    def set_screen(self, arg):
-        self.calls.append('set_screen')
-        self.args.append(arg)
-
-    def received(self, message, arg=None):
-        received_index = self.calls.index(message)
-        if arg is None:
-            return received_index > -1
-        arg_val = self.args[received_index]
-        return arg_val == arg
 
 
 
@@ -32,8 +17,8 @@ class TestDivoomLight(unittest.TestCase):
     def setUp(self):
         test_config = ConfigEntry(entry_id='', domain='', title='', data='', options='', version='', minor_version=0,
                                   source='')
-        self.device = DummyPixoo()
-        self.light = DivoomLight(pixoo=self.device, config_entry=test_config)
+        self.pixoo = Mock()
+        self.light = DivoomLight(pixoo=self.pixoo, config_entry=test_config)
 
     def test_name(self):
         self.assertEqual("Light", self.light.name)
@@ -61,13 +46,20 @@ class TestDivoomLight(unittest.TestCase):
         self.assertTrue(self.light.is_on)
         self.assertEqual(37, self.light.brightness)
 
-    def test_turn_off(self): #TODO: don't call it device, that's a loaded term in HA
+    def test_turn_off(self):
         self.light.turn_off()
         self.assertFalse(self.light.is_on)
-        self.assertTrue(self.device.received('set_screen', False))
+        self.pixoo.set_screen.assert_called_once_with(False)
 
     def test_update(self):
-        # TODO: updates the entity from the pixoo
-        self.assertTrue(False)
+        self.pixoo.get_state.return_value = True
+        self.pixoo.get_brightness.return_value = 100
+
+        self.light.update()
+
+        self.pixoo.get_state.assert_called_once()
+        self.pixoo.get_brightness.assert_called_once()
+        self.assertTrue(self.light.is_on)
+        self.assertEqual(255, self.light.brightness)
 
         # TODO  # class TestSensor(unittest.TestCase):  #     def test_name(self):  #         def test_device_info(self):
