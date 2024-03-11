@@ -278,6 +278,23 @@ https://github.com/gickowtf/pixoo-homeassistant/discussions
 
 <br>
 
+## Contributing
+
+Please confirm that unit tests are passing (and add any missing coverage for the changes in your PR). To run the unit tests locally:
+
+```commandline
+pip3 install -r requirements-test.txt
+```
+
+and then 
+
+```commandline
+python -m unittest discover tests  
+```
+
+
+<br>
+
 ## Disclaimer
 This is not official software from Divoom.
 It is a custom integration created by me (gickowtf) and therefore Divoom is not responsible for any damages/problems caused by this integration, nor does Divoom provide any end-user support for the integration.
