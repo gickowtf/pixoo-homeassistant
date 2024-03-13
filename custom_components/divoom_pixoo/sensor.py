@@ -53,7 +53,7 @@ class Pixoo64(Entity):
         self._attr_has_entity_name = True
         self._attr_name = 'Current Page'
         self._attr_extra_state_attributes = {}
-        self._attr_extra_state_attributes['page'] = self._current_page_index
+        self._attr_extra_state_attributes['TotalPages'] = len(self._pages)
         _LOGGER.debug("All pages for %s: %s", self._pixoo.address, self._pages)
         self.showing_notification = False
 
@@ -84,11 +84,15 @@ class Pixoo64(Entity):
         if len(self._pages) == 0:
             return
 
-        initial_index = self._current_page_index
         is_enabled = None
+        iteration_count = 0
+        self._current_page_index = (self._current_page_index + 1) % len(self._pages)  # Increment the page index, duh.
         while not is_enabled:
+            if iteration_count >= len(self._pages):
+                _LOGGER.info("All pages disabled. Not updating.")
+                break
+
             self.page = self._pages[self._current_page_index]
-            self.schedule_update_ha_state()
 
             try:
                 is_enabled = str(Template(str(self.page.get('enabled', 'true')), self.hass).async_render())
@@ -98,13 +102,11 @@ class Pixoo64(Entity):
                 is_enabled = False
 
             if is_enabled:
+                self.schedule_update_ha_state()
                 await self.hass.async_add_executor_job(self._render_page, self.page)
-                self._current_page_index = (self._current_page_index + 1) % len(self._pages)
             else:
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
-                if self._current_page_index == initial_index:
-                    _LOGGER.info("All pages disabled. Not updating.")
-                    break
+                iteration_count += 1
 
     def _render_page(self, page):
         pixoo = self._pixoo
