@@ -65,7 +65,7 @@ class Pixoo:
     __buffers_send = 0
     __counter = 0
     __refresh_counter_limit = 32
-    timeout = 5
+    timeout = 10
 
     def __init__(self, address, size=64, debug=False, refresh_connection_automatically=True):
         assert size in [16, 32, 64], \
