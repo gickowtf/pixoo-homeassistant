@@ -10,7 +10,7 @@ show_message:
       name: Page Data
       description: "Consider this as one page, so start at 'page_type=something' (ignore the '-' in front)."
       required: true
-      example: "page_type: clock\n enabled: true\n id: 69"
+      example: "page_type: clock\n enabled: true\n id: 182"
       selector:
         object:
     duration:
