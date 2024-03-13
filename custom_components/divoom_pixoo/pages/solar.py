@@ -6,6 +6,9 @@ _LOGGER = logging.getLogger(__name__)
 
 def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
     pixoo.clear()
+    for key in page_data.keys():  # Convert all values to strings. Avoids problems.
+        page_data[key] = str(page_data[key])
+
     try:
         rendered_power = float(Template(page_data['power'], hass).async_render())
         rendered_storage = float(Template(page_data['storage'], hass).async_render())

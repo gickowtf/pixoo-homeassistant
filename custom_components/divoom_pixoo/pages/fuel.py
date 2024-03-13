@@ -5,7 +5,7 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-def fuel(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX):
+def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX):
     pixoo.clear()
 
     #Datetime
@@ -19,6 +19,9 @@ def fuel(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX):
     black = (0, 0, 0) #default title
     white = (255, 255, 255)  #date
     yellow = (255, 230, 0) #default bg + time
+
+    for key in page_data.keys():  # Convert all values to strings. Avoids problems.
+        page_data[key] = str(page_data[key])
 
     try:
         title = str(Template(page_data['title'], hass).async_render())
