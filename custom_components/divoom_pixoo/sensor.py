@@ -44,8 +44,8 @@ class Pixoo64(Entity):
         self._config_entry = config_entry
         self._pages = self._config_entry.options.get('pages_data', pages)
         self._scan_interval = timedelta(seconds=int(self._config_entry.options.get('scan_interval', scan_interval)))
-        self._current_page_index = 0
-        self._current_page = self._pages[self._current_page_index]
+        self._current_page_index = -1  # Start at -1 so that the first page is 0.
+        self._current_page = None
         self._attr_has_entity_name = True
         self._attr_name = 'Current Page'
         self._attr_extra_state_attributes = {'TotalPages': len(self._pages)}
