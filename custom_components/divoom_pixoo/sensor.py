@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
@@ -21,20 +21,16 @@ from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
     async_add_entities([ Pixoo64(config_entry=config_entry, pixoo=hass.data[DOMAIN][config_entry.entry_id]["pixoo"]) ], True)
+
     platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
         'show_message',
         {
-            vol.Required('messages'): [cv.string],
-            vol.Required('positions'): [[cv.positive_int]],
-            vol.Required('colors'): [[cv.positive_int]],
-            vol.Required('fonts'): [cv.string],
-            vol.Optional('images', default=[]): [cv.string],
-            vol.Optional('image_positions', default=[]): [[cv.positive_int]],
-            vol.Optional('info_text', default="No"): cv.string,
-            vol.Optional('info_images', default="No"): cv.string,
+            vol.Required('page_data'): dict,
+            vol.Optional('duration'): int
         },
         'async_show_message',
     )
@@ -52,10 +48,9 @@ class Pixoo64(Entity):
         self._current_page = self._pages[self._current_page_index]
         self._attr_has_entity_name = True
         self._attr_name = 'Current Page'
-        self._attr_extra_state_attributes = {}
-        self._attr_extra_state_attributes['TotalPages'] = len(self._pages)
+        self._attr_extra_state_attributes = {'TotalPages': len(self._pages)}
         _LOGGER.debug("All pages for %s: %s", self._pixoo.address, self._pages)
-        self.showing_notification = False
+        self._notification_before = datetime.now()
 
     async def async_added_to_hass(self):
         if DOMAIN in self.hass.data:
@@ -78,7 +73,7 @@ class Pixoo64(Entity):
         await self._async_next_page()
 
     async def _async_next_page(self):
-        if self.showing_notification:
+        if self._notification_before > datetime.now():
             return
 
         if len(self._pages) == 0:
@@ -166,34 +161,26 @@ class Pixoo64(Entity):
 
             pixoo.push()
 
+    # Service to show a message.
+    # Comment: By calling this, it's possible that next_page "skips" a page, therefore looking like a next page takes
+    # longer than normal. I'm not 100% certain on how to make this work properly...
+    async def async_show_message(self, page_data, duration=None):
+        if duration is None:
+            duration = self._scan_interval
+        else:
+            duration = timedelta(seconds=duration)
 
-    async def async_show_message(self, messages, positions, colors, fonts, images=None, image_positions=None, info_text=None, info_images=None):
-        if not all([messages, positions, colors, fonts]) or len(messages) != len(positions) != len(colors) != len(fonts):
-            _LOGGER.error("Lists for messages, positions, colors, and fonts must all be present and have the same length.")
+        if not page_data or not page_data.get('page_type'):
+            _LOGGER.error("No page to render.")
             return
 
-        self.showing_notification = True
-
         def draw():
-            pixoo = self._pixoo
-            pixoo.clear()
-            _LOGGER.debug("Service called for %s (%s)", self._config_entry.title, self._pixoo.address)
-
-            for img, img_pos in zip(images, image_positions):
-                pixoo.draw_image(img, tuple(img_pos))
-
-            for message, position, color, font in zip(messages, positions, colors, fonts):
-                selected_font = FONT_PICO_8 if font == 'FONT_PICO_8' else FONT_GICKO
-                if font == 'FONT_PICO_8':
-                    pixoo.draw_text(message, tuple(position), tuple(color), selected_font)
-                else:
-                    pixoo.draw_text(message.upper(), tuple(position), tuple(color), selected_font)
-
-            pixoo.push()
+            self._render_page(page_data)
 
         await self.hass.async_add_executor_job(draw)
-        await asyncio.sleep(self._scan_interval.total_seconds())
-        self.showing_notification = False
+        self._notification_before = datetime.now() + duration
+    #     By not using the sleep method, HA will show a success thingy in the UI.
+    #     If not, the success will only appear after the sleep time.
 
     @property
     def state(self):

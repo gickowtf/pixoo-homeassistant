@@ -1,66 +1,26 @@
 show_message:
-  name: Use for push notifications
-  description: Display a message on the Divoom Pixoo. Please select the "... Current Page" entity of the device.
+  name: Send a page to Divoom Pixoo
+  description: Display a specified page on the Divoom Pixoo. Please select the "... Current Page" entity of the device.
   target:
     entity:
       domain: sensor
       integration: divoom_pixoo
   fields:
-    info_text:
-      name: IMPORTANT INFORMATION FOR THE TEXT
-      description: "For every message you have, you NEED to specify its position, its color and its font."
-      required: false
-      selector:
-        constant:
-          value: "No"
-          label: "(This is just for the information, selecting this is useless)"
-    messages:
-      name: Messages
-      description: 'The messages to display. Example: ["Hello World!", "How are you?"]'
-      required: false
-      example: '["Hello World!", "How are you?"]'
+    page_data:
+      name: Page Data
+      description: "Consider this as one page, so start at 'page_type=something' (ignore the '-' in front)."
+      required: true
+      example: "page_type: clock\n enabled: true\n id: 69"
       selector:
         object:
-    positions:
-      description: 'The positions of the components. Example: [[1,1], [1,20]]'
-      name: Positions
+    duration:
+      name: Duration of the notification
+      description: "This will be the time the message is displayed on the device. Default: the device's scan_time in the config."
       required: false
-      example: '[[1,1], [1,20]]'
+      example: "10"
       selector:
-        object:
-    colors:
-      name: Colors
-      description: 'List of RGB values for the texts. Example: [[255,0,0], [0,255,0]]'
-      required: false
-      example: '[[255,0,0], [0,255,0]]'
-      selector:
-        object:
-    fonts:
-      name: Fonts
-      description: 'List of the font for each text. Example: ["FONT_GICKO", "FONT_PICO_8"]'
-      required: false
-      example: '["FONT_GICKO", "FONT_PICO_8"]'
-      selector:
-        object:
-    info_images:
-      name: IMPORTANT INFORMATION FOR THE IMAGES
-      description: "For every image you have, you NEED to specify its position and the image to display."
-      required: false
-      selector:
-        constant:
-          value: "No"
-          label: "(Still nothing)"
-    images:
-      name: Images
-      description: 'The path to the images to display. Example: [ "/config/custom_components/divoom_pixoo/img/sunpower.png", "/config/custom_components/divoom_pixoo/img/haus.png" ]'
-      required: false
-      example: '[ "/config/custom_components/divoom_pixoo/img/sunpower.png", "/config/custom_components/divoom_pixoo/img/haus.png" ]'
-      selector:
-        object:
-    image_positions:
-      name: Image positions
-      description: 'The positions of the images. Example: [[1,30], [20,30]]'
-      required: false
-      example: '[[1,30], [20,30]]'
-      selector:
-        object:
+        number:
+          min: 1
+          max: 9999
+          unit_of_measurement: seconds
+          mode: box
