@@ -41,7 +41,7 @@ def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN
     price_color = tuple(page_data.get('price_color', white))
     title_color = tuple(page_data.get('title_color', black))
     stripe_color = tuple(page_data.get('stripe_color', font_color))
-    title_offset = page_data.get('title_offset', 2)
+    title_offset = int(page_data.get('title_offset', 2))
 
     pixoo.draw_filled_rectangle((0, 57), (64, 64), darkgrey)
     pixoo.draw_text(status, (1, 58), white, FIVE_PIX)
