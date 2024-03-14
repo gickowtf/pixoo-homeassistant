@@ -302,16 +302,21 @@ or
 --------------
 
 ## Fonts
-| **FONT**    | **IMAGE**                                                                                                                 |
-|:------------|:--------------------------------------------------------------------------------------------------------------------------|
-| FONT_GICKO  | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true" title="FONT_GICKO" /> |
-| FIVE_PIX    | *Image available soon*                                                                                                    |
-| FONT_PICO_8 | *Image available soon*                                                                                                    |
+| **FONT** | **IMAGE**                                                                                                                              |
+|:---------|:---------------------------------------------------------------------------------------------------------------------------------------|
+| GICKO    | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true" title="FONT_GICKO"  width="500" /> |
+| FIVE_PIX | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/five_pix.png?raw=true" title="five_pix" width="500" />      |
+| PICO_8   | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/PICO_8.png?raw=true" title="PICO_8" width="500" />          |
 
 <br>
 
 --------------
 
+## Colors
+<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/colors.png?raw=true" title="colors" />
+<br>
+
+--------------
 
 ## Issues
 
