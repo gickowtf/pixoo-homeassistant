@@ -268,7 +268,7 @@ Example of the image:
 
 ## Automations as Push Notifications
 
-You can use it for Push Notifications. Trigger with anything! Action with the Service "Divoom Pixoo 64: Use for push notifications".
+You can use it for Push Notifications. Trigger with anything! Action with the Service "Divoom Pixoo 64: Send a page to Divoom Pixoo".
 
 **IMPORTANT**
 Display a message on the Divoom Pixoo. Please select the "... Current Page" entity of the device.
