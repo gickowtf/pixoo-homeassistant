@@ -117,7 +117,7 @@ for example:
       font: PICO_8
       color: [255, 0, 0]
     - type: image
-      image_path: /config/img/hause.png
+      image_path: /config/img/haus.png
       position: [30, 30]
 ```
 <br>
@@ -284,17 +284,16 @@ id: 182
 ```
 or
 ```yaml
-- page_type: components
-  enabled: "{{ states.input_boolean.YOURS.state }}" #optional
-  components:
-    - type: text
-      position: [10, 0]
-      content: 2 github/gickowtf #
-      font: PICO_8
-      color: [255, 0, 0]
-    - type: image
-      image_path: /config/img/hause.png
-      position: [30, 30]
+page_type: components
+components:
+  - type: text
+    position: [10, 0]
+    content: 2 github/gickowtf #
+    font: PICO_8
+    color: [255, 0, 0]
+  - type: image
+    image_path: /config/img/haus.png
+    position: [30, 30]
 ```
 
 <br>
