@@ -1,0 +1,52 @@
+{
+    "title": "Divoom Pixoo 64",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Automatisch entdeckte Geräte",
+                "description": "Bitte wählen Sie ein entdecktes Pixoo 64-Gerät aus der Liste aus oder wählen Sie \"Manuelle IP\", um die IP des Gerätes manuell einzugeben.",
+                "data": {
+                    "selector": "Wählen Sie das einzurichtende Gerät"
+                }
+            },
+            "config": {
+                "title": "Konfigurieren Sie Ihr neues Pixoo-Gerät",
+                "description": "Bitte geben Sie die IP-Adresse Ihres Pixoo-Geräts ein.",
+                "data": {
+                    "ip_address": "IP-Adresse des Geräts",
+                    "scan_interval": "Überprüfungsintervall (in Sekunden)",
+                    "pages_data": "Liste der Seiten in JSON"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "Es wurde bereits ein Gerät mit dieser ID hinzugefügt.",
+            "not_supported": "Für dieses Gerät gibt es leider keine Unterstützung."
+        },
+        "error": {
+            "connection": "Mit diesen Angaben (IP) kann keine Verbindung zu Ihrem Gerät hergestellt werden. Es könnte sich um ein intermittierendes Problem handeln, oder die Angaben sind falsch.",
+            "already_configured": "Ein anderes Gerät mit dieser IP-Adresse ist bereits hinzugefügt worden."
+        }
+    },
+    "options": {
+        "step": {
+            "config": {
+                "title": "Konfigurieren Sie Ihr Pixoo-Gerät",
+                "description": "Aktualisieren Sie Ihr bestehendes Pixoo-Gerät",
+                "data": {
+                    "ip_address": "IP-Adresse des Geräts",
+                    "scan_interval": "Überprüfungsintervall (in Sekunden)",
+                    "pages_data": "Liste der Seiten in JSON"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "Es wurde bereits ein Gerät mit dieser ID hinzugefügt.",
+            "not_supported": "Für dieses Gerät gibt es leider keine Unterstützung."
+        },
+        "error": {
+            "connection": "Mit diesen Angaben (IP) kann keine Verbindung zu Ihrem Gerät hergestellt werden. Es könnte sich um ein intermittierendes Problem handeln, oder die Angaben sind falsch.",
+            "already_configured": "Ein anderes Gerät mit dieser IP-Adresse ist bereits hinzugefügt worden."
+        }
+    }
+}
