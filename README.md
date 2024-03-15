@@ -98,14 +98,19 @@ for example:
 | components:             | - type: text or - type: image **required** |
 
 
-| **Keywords** | **Values**                                                                 |
-|:-------------|:---------------------------------------------------------------------------|
-| - type: text | using templates or string - \n newline support                             |
-| position     | **required** The text [position](#positioning) on a XY axis at 64x64 pixel |
-| content      | **required** {{ templates }} and [Newline](#newline) Support in text       |
-| font         | default PICO_8  [Fonts](#fonts)                                            |
-| color        | default white [R, G, B] or [Colors](#colors)                               |
+| **Keywords** | **Values**                                                                      |
+|:-------------|:--------------------------------------------------------------------------------|
+| - type: text |                                                                                 |
+| position     | **required** The text [position](#positioning) on a XY axis at 64x64 pixel      |
+| content      | **required** {{ templates }} and [Newline](#newline) Support in text            |
+| font         | default PICO_8  [Fonts](#fonts)                                                 |
+| color        | default white [R, G, B] or [Colors](#colors)                                    |
 
+| **Keywords**  | **Values**                                                                  |
+|:--------------|:----------------------------------------------------------------------------|
+| - type: image |                                                                             |
+| image_path    | **required** image path like /config/img/haus.png                           |
+| position      | **required** The image [position](#positioning) on a XY axis at 64x64 pixel |
 
 ```yaml
 - page_type: components
