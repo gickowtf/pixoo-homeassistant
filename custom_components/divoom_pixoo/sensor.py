@@ -14,8 +14,7 @@ from homeassistant.helpers.template import Template, TemplateError
 
 from .pixoo64._colors import get_rgb, CSS4_COLORS
 from .const import DOMAIN, VERSION
-from .pages.solar import solar
-from .pages.fuel import fuel
+from .pages._pages import special_pages
 from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX
 
 
@@ -107,18 +106,15 @@ class Pixoo64(Entity):
         pixoo = self._pixoo
         pixoo.clear()
 
-        if page['page_type'].lower() == "channel":
+        page_type = page['page_type'].lower()
+        if page_type in special_pages:
+            special_pages[page_type](pixoo, self.hass, page)
+            pixoo.push()
+        elif page_type == "channel":
             pixoo.set_custom_page(page['id'])
-        elif page['page_type'].lower() == "clock":
+        elif page_type == "clock":
             pixoo.set_clock(page['id'])
-        elif page['page_type'].lower() == "pv":
-            solar(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO)
-            pixoo.push()
-        elif page['page_type'].lower() == "fuel":
-            _LOGGER.info(f"Fuel = {page}")
-            fuel(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)
-            pixoo.push()
-        elif page['page_type'].lower() == "custom" or page['page_type'].lower() == "components":
+        elif page_type in ["custom", "components"]:
             for component in page['components']:
 
                 if component['type'] == "text":
