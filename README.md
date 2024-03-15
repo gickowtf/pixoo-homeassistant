@@ -275,7 +275,7 @@ Display a message on the Divoom Pixoo. Please select the "... Current Page" enti
 
 In the following dialog you can define your push notification as usual in JSON format.
 
-Everything you can define as a single page can also be used as automation. 
+Everything you can define as a single page can also be used as automation. (Except for the enabled tag.) 
 
 Some examples of **Page Data:**
 ```yaml
