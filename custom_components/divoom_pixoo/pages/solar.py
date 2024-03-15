@@ -23,12 +23,12 @@ def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
     image_folder = "/config/custom_components/divoom_pixoo/img/"
 
     battery_images = [
-        (image_folder + "akku00-20.png", 0),
-        (image_folder + "akku20-40.png", 20),
-        (image_folder + "akku40-60.png", 40),
+        (image_folder + "akku80-100.png", 80),
         (image_folder + "akku60-80.png", 60),
-        (image_folder + "akku80-100.png", 80)
-    ]
+        (image_folder + "akku40-60.png", 40),
+        (image_folder + "akku20-40.png", 20),
+        (image_folder + "akku00-20.png", 0)
+        ]
 
     green = (4, 204, 2) #discharge
     red = (255, 0, 68) #discharge
