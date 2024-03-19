@@ -15,7 +15,7 @@ from homeassistant.helpers.template import Template, TemplateError
 from .pixoo64._colors import get_rgb, CSS4_COLORS
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
-from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX
+from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK
 
 
 _LOGGER = logging.getLogger(__name__)
