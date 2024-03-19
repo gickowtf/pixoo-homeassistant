@@ -233,11 +233,11 @@ class Pixoo:
             font = FONT_PICO_8
         matrix = retrieve_glyph(character, font)
         if matrix is not None:
-            teiler = matrix[-1]
+            x_size = matrix[-1]
             for index, bit in enumerate(matrix):
-                if bit == 1:
-                    local_x = index % teiler
-                    local_y = int(index / teiler)
+                if bit == 1 and index != len(matrix) - 1:
+                    local_x = index % x_size
+                    local_y = int(index / x_size)
                     self.draw_pixel((xy[0] + local_x, xy[1] + local_y), rgb)
 
     def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None):
