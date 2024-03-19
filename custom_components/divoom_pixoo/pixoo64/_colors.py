@@ -1,12 +1,9 @@
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import TemplateError
+from homeassistant.helpers.template import Template
 
-def get_rgb(name):
-    hex = CSS4_COLORS[name.lower()]
-    # convert to rgb
-    r = int(hex[1:3], 16)
-    g = int(hex[3:5], 16)
-    b = int(hex[5:7], 16)
-    return (r, g, b)
-
+import logging
+_LOGGER = logging.getLogger(__name__)
 
 # https://drafts.csswg.org/css-color-4/#named-colors
 # Image with all of them: https://github.com/paztronomer/blog/blob/master/code/p01_python_colors/named_colors.png
@@ -160,3 +157,27 @@ CSS4_COLORS = {
     'whitesmoke': '#F5F5F5',
     'yellow': '#FFFF00',
     'yellowgreen': '#9ACD32'}
+
+
+def get_rgb(name: str) -> tuple[int, int, int]:
+    hex = CSS4_COLORS[name.lower()]
+    # convert to rgb
+    r = int(hex[1:3], 16)
+    g = int(hex[3:5], 16)
+    b = int(hex[5:7], 16)
+    return (r, g, b)
+
+
+def render_color(color: str | list | None, hass: HomeAssistant, default_color: tuple = get_rgb("white")) -> tuple[int, int, int]:
+    try:
+        rendered_color = Template(str(color), hass).async_render()
+        if isinstance(rendered_color, list):
+            rendered_color = tuple(rendered_color)
+        elif rendered_color in CSS4_COLORS:
+            rendered_color = get_rgb(rendered_color)
+        else:
+            rendered_color = default_color
+    except TemplateError as e:
+        _LOGGER.error("Template render error: %s", e)
+        rendered_color = default_color
+    return rendered_color

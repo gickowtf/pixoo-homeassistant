@@ -3,6 +3,7 @@ from homeassistant.helpers.template import Template
 from homeassistant.exceptions import TemplateError
 from datetime import datetime
 import logging
+from ..pixoo64._colors import render_color
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,11 +14,11 @@ def progress_bar(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX
     now = datetime.now()
     time = now.strftime("%H:%M")
 
-    red = "(255, 0, 68)"
+    red = (255, 0, 68)
     grey = (51, 51, 51)
-    timeColor = "(51, 51, 51)"
-    white = "(255, 255, 255)"
-    blue = "(0, 123, 255)"
+    timeColor = (51, 51, 51)
+    white = (255, 255, 255)
+    blue = (0, 123, 255)
 
     for key in page_data.keys():  # Convert all values to strings. Avoids problems.
         page_data[key] = str(page_data[key])
@@ -31,15 +32,15 @@ def progress_bar(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX
         _LOGGER.error("Template render error: %s", e)
         return  # Stop execution if there is a template error
 
+    bg_color = render_color(page_data.get('bg_color'), hass, blue)
+    header_font_color = render_color(page_data.get('header_font_color'), hass, white)
+    progress_bar_color = render_color(page_data.get('progress_bar_color'), hass, red)
+    progress_text_color = render_color(page_data.get('progress_text_color'), hass, white)
+    time_color = render_color(page_data.get('time_color'), hass, timeColor)
+    footer_font_color = render_color(page_data.get('footer_font_color'), hass, white)
 
-    bg_color = eval(page_data.get('bg_color', blue))
     header_offset = int(page_data.get('header_offset', 2))
-    header_font_color = eval(page_data.get('header_font_color', white))
-    progress_bar_color = eval(page_data.get('progress_bar_color', red))
-    progress_text_color = eval(page_data.get('progress_text_color', white))
-    time_color = eval(page_data.get('time_color', timeColor))
     footer_offset = int(page_data.get('footer_offset', 2))
-    footer_font_color = eval(page_data.get('footer_font_color', white))
 
     #backgroundcolor
     pixoo.draw_filled_rectangle((0,0), (63,63), bg_color)

@@ -12,7 +12,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.template import Template, TemplateError
 
-from .pixoo64._colors import get_rgb, CSS4_COLORS
+from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
 from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK
@@ -133,18 +133,7 @@ class Pixoo64(Entity):
                     elif component['font'] == "FIVE_PIX":
                         font = FIVE_PIX
 
-                    try:
-                        rendered_color = Template(str(component['color']), self.hass).async_render()
-                        if isinstance(rendered_color, list):
-                            rendered_color = tuple(rendered_color)
-                        elif rendered_color in CSS4_COLORS:
-                            rendered_color = get_rgb(rendered_color)
-                        else:
-                            rendered_color = get_rgb("white")
-
-                    except TemplateError as e:
-                        _LOGGER.error("Template render error: %s", e)
-                        rendered_color = get_rgb("white")
+                    rendered_color = render_color(component['color'], self.hass)
 
                     pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font)
 
