@@ -16,12 +16,12 @@ def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN
 
     #colors
     darkgrey = (36, 36, 36)  #datetime bg
-    black = (0, 0, 0) #default title
-    white = (255, 255, 255)  #date
-    yellow = (255, 230, 0) #default bg + time
+    black = "(0, 0, 0)" #default title
+    white = "(255, 255, 255)"  #date
+    yellow = "(255, 230, 0)" #default bg + time
 
     for key in page_data.keys():  # Convert all values to strings. Avoids problems.
-        page_data[key] = str(page_data[key])
+        page_data[key] = page_data[key]
 
     try:
         title = str(Template(page_data['title'], hass).async_render())
@@ -36,15 +36,15 @@ def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN
         _LOGGER.error("Template render error: %s", e)
         return  # Stop execution if there is a template error
 
-    font_color = tuple(page_data.get('font_color', white))
-    bg_color = tuple(page_data.get('bg_color', yellow))
-    price_color = tuple(page_data.get('price_color', white))
-    title_color = tuple(page_data.get('title_color', black))
-    stripe_color = tuple(page_data.get('stripe_color', font_color))
+    font_color = eval(page_data.get('font_color', white))
+    bg_color = eval(page_data.get('bg_color', yellow))
+    price_color = eval(page_data.get('price_color', white))
+    title_color = eval(page_data.get('title_color', black))
+    stripe_color = eval(page_data.get('stripe_color', white))
     title_offset = int(page_data.get('title_offset', 2))
 
     pixoo.draw_filled_rectangle((0, 57), (64, 64), darkgrey)
-    pixoo.draw_text(status, (1, 58), white, FIVE_PIX)
+    pixoo.draw_text(status, (1, 58), font_color, FIVE_PIX)
 
     #bg for names and prices
     pixoo.draw_filled_rectangle((0, 24), (64, 56), bg_color)
