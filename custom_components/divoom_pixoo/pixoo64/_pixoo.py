@@ -6,7 +6,7 @@ import requests
 from PIL import Image, ImageOps
 
 from ._colors import get_rgb
-from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX
+from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK
 
 import logging
 _LOGGER = logging.getLogger(__name__)
