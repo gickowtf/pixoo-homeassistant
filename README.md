@@ -30,7 +30,7 @@ repository into the `custom_components/divoom_pixoo` directory.
 
 **List of pages in JSON * :** 
 
-<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/pixoo.gif?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" />
+<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/pixoo.gif?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" width="150" />
 
 ```yaml
 - page_type: PV
