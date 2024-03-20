@@ -3,6 +3,8 @@ from homeassistant.exceptions import TemplateError
 from datetime import datetime
 import logging
 
+from ..pixoo64._colors import render_color
+
 _LOGGER = logging.getLogger(__name__)
 
 def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX):
@@ -16,12 +18,12 @@ def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN
 
     #colors
     darkgrey = (36, 36, 36)  #datetime bg
-    black = "(0, 0, 0)" #default title
-    white = "(255, 255, 255)"  #date
-    yellow = "(255, 230, 0)" #default bg + time
+    black = (0, 0, 0) #default title
+    white = (255, 255, 255)  #date
+    yellow = (255, 230, 0) #default bg + time
 
     for key in page_data.keys():  # Convert all values to strings. Avoids problems.
-        page_data[key] = page_data[key]
+        page_data[key] = str(page_data[key])
 
     try:
         title = str(Template(page_data['title'], hass).async_render())
@@ -36,11 +38,12 @@ def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN
         _LOGGER.error("Template render error: %s", e)
         return  # Stop execution if there is a template error
 
-    font_color = eval(page_data.get('font_color', white))
-    bg_color = eval(page_data.get('bg_color', yellow))
-    price_color = eval(page_data.get('price_color', white))
-    title_color = eval(page_data.get('title_color', black))
-    stripe_color = eval(page_data.get('stripe_color', white))
+    font_color = render_color(page_data.get('font_color'), hass, white)
+    bg_color = render_color(page_data.get('bg_color'), hass, yellow)
+    price_color = render_color(page_data.get('price_color'), hass, white)
+    title_color = render_color(page_data.get('title_color'), hass, black)
+    stripe_color = render_color(page_data.get('stripe_color'), hass, white)
+
     title_offset = int(page_data.get('title_offset', 2))
 
     pixoo.draw_filled_rectangle((0, 57), (64, 64), darkgrey)
