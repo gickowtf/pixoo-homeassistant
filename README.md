@@ -187,24 +187,24 @@ Photovoltaic - PV is a pre-designed page. The icon changes depending on the batt
 
 
 
-| **Keywords**          | **Values**                       |                                                                                                                                                                                      |
-|:----------------------|:---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| - page_type: Fuel     | to use this page_type            | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/gasstation_preview.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" /> |
-| title                 | -required use {{ template }}     | Title e.g. Gas Station Name                                                                                                                                                          |
-| name1                 | -required     use {{ template }} | e.g. fuel type                                                                                                                                                                       |
-| price1                | -required     use {{ template }} | fuel price                                                                                                                                                                           |
-| name2                 | -required     use {{ template }} | e.g. fuel type                                                                                                                                                                       |
-| price2                | -required     use {{ template }} | fuel price                                                                                                                                                                           |
-| name3                 | -required     use {{ template }} | e.g. fuel type                                                                                                                                                                       |
-| price3                | -required     use {{ template }} | fuel price                                                                                                                                                                           |
-| status                | -required     use {{ template }} | Any extra field in my case an opening status                                                                                                                                         |
-|                       |                                  |                                                                                                                                                                                      |
-| font_color            | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                             |
-| bg_color              | -optional     use "[R, G, B]"    | RGB Color #default yellow (255, 230, 0)                                                                                                                                              |
-| price_color           | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                             |
-| title_color           | -optional     use "[R, G, B]"    | RGB Color #default black                                                                                                                                                             |
-| stripe_color          | -optional     use "[R, G, B]"    | RGB Color #default font_color                                                                                                                                                        |
-| title_offset          | -optional     use "[R, G, B]"    | to center the text #default 2                                                                                                                                                        |
+| **Keywords**          | **Values**                                         |                                                                                                                                                                                      |
+|:----------------------|:---------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| - page_type: Fuel     | to use this page_type                              | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/gasstation_preview.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" /> |
+| title                 | -required use {{ template }}                       | Title e.g. Gas Station Name                                                                                                                                                          |
+| name1                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                                       |
+| price1                | -required     use {{ template }}                   | fuel price                                                                                                                                                                           |
+| name2                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                                       |
+| price2                | -required     use {{ template }}                   | fuel price                                                                                                                                                                           |
+| name3                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                                       |
+| price3                | -required     use {{ template }}                   | fuel price                                                                                                                                                                           |
+| status                | -required     use {{ template }}                   | Any extra field in my case an opening status                                                                                                                                         |
+|                       |                                                    |                                                                                                                                                                                      |
+| font_color            | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default white                                                                                                                                                             |
+| bg_color              | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default yellow (255, 230, 0)                                                                                                                                              |
+| price_color           | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default white                                                                                                                                                             |
+| title_color           | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default black                                                                                                                                                             |
+| stripe_color          | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default font_color                                                                                                                                                        |
+| title_offset          | -optional     use integers                         | to center the text #default 2                                                                                                                                                        |
 
 Example of the image:
 ```yaml
@@ -230,21 +230,21 @@ Example of the image:
 ### Progress Bar
 *Special page with a progress bar for, for example, the status of the dishwasher or charging status of the car*
 
-| **Keywords**        | **Values**                       |                                                                                                                                                                                     |
-|:--------------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| - page_type: P      | to use this page_type            | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/progressbar.png?raw=true" title="Example of configuration.yaml ProgressBar" align="left" height="150" /> |
-| header              | -required use {{ template }}     | e.g. Dishwasher                                                                                                                                                                     |
-| progress            | -required     use {{ template }} | integer required                                                                                                                                                                    |
-| footer              | -required     use {{ template }} | any footer e.g. Date                                                                                                                                                                | 
-|                     |                                  |                                                                                                                                                                                     |
-| bg_color            | -optional     use "[R, G, B]"    | RGB Color #default blue                                                                                                                                                             |
-| header_offset       | -optional     use int            | integer required      #default 2                                                                                                                                                    |
-| header_font_color   | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                            |
-| progress_bar_color  | -optional     use "[R, G, B]"    | RGB Color #default red                                                                                                                                                              |
-| progress_text_color | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                            |
-| time_color          | -optional     use "[R, G, B]"    | RGB Color #default grey                                                                                                                                                             |
-| footer_offset       | -optional     use int            | integer required      #default 2                                                                                                                                                    |
-| footer_font_color   | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                            |
+| **Keywords**        | **Values**                                          |                                                                                                                                                                                     |
+|:--------------------|:----------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| - page_type: P      | to use this page_type                               | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/progressbar.png?raw=true" title="Example of configuration.yaml ProgressBar" align="left" height="150" /> |
+| header              | -required use {{ template }}                        | e.g. Dishwasher                                                                                                                                                                     |
+| progress            | -required     use {{ template }}                    | integer required                                                                                                                                                                    |
+| footer              | -required     use {{ template }}                    | any footer e.g. Date                                                                                                                                                                | 
+|                     |                                                     |                                                                                                                                                                                     |
+| bg_color            | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default blue                                                                                                                                                             |
+| header_offset       | -optional     use int                               | integer required      #default 2                                                                                                                                                    |
+| header_font_color   | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default white                                                                                                                                                            |
+| progress_bar_color  | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default red                                                                                                                                                              |
+| progress_text_color | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default white                                                                                                                                                            |
+| time_color          | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default grey                                                                                                                                                             |
+| footer_offset       | -optional     use int                               | integer required      #default 2                                                                                                                                                    |
+| footer_font_color   | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default white                                                                                                                                                            |
 
 
 Example of the image:
@@ -295,7 +295,7 @@ Example of the image:
   id: 182
 ```
 
-[Here is a list of all ClockFaces](https://github.com/gickowtf/pixoo-homeassistant/blob/main/READMES/CLOCK.md)
+[Here is a list of all ClockFaces](https://github.com/gickowtf/pixoo-homeassistant/blob/main/READMES/CLOCKS.md)
 
 *or*
 
