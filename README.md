@@ -295,6 +295,10 @@ Example of the image:
   id: 182
 ```
 
+[Here is a list of all ClockFaces](https://github.com/gickowtf/pixoo-homeassistant/blob/main/READMES/CLOCK.md)
+
+*or*
+
 *To find out the number of the ClockFace, you can proceed as follows.*
 1. First go to the settings and activate debug logging in the Divoom Pixoo 64 integration.
 2. Now open the Divoom app on your smartphone and select your preferred ClockFace.
