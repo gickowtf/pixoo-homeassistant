@@ -199,12 +199,12 @@ Photovoltaic - PV is a pre-designed page. The icon changes depending on the batt
 | price3                | -required     use {{ template }} | fuel price                                                                                                                                                                           |
 | status                | -required     use {{ template }} | Any extra field in my case an opening status                                                                                                                                         |
 |                       |                                  |                                                                                                                                                                                      |
-| font_color            | -optional     use [R, G, B]      | RGB Color #default white                                                                                                                                                             |
-| bg_color              | -optional     use [R, G, B]      | RGB Color #default yellow (255, 230, 0)                                                                                                                                              |
-| price_color           | -optional     use [R, G, B]      | RGB Color #default white                                                                                                                                                             |
-| title_color           | -optional     use [R, G, B]      | RGB Color #default black                                                                                                                                                             |
-| stripe_color          | -optional     use [R, G, B]      | RGB Color #default font_color                                                                                                                                                        |
-| title_offset          | -optional     use an int         | to center the text #default 2                                                                                                                                                        |
+| font_color            | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                             |
+| bg_color              | -optional     use "[R, G, B]"    | RGB Color #default yellow (255, 230, 0)                                                                                                                                              |
+| price_color           | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                             |
+| title_color           | -optional     use "[R, G, B]"    | RGB Color #default black                                                                                                                                                             |
+| stripe_color          | -optional     use "[R, G, B]"    | RGB Color #default font_color                                                                                                                                                        |
+| title_offset          | -optional     use "[R, G, B]"    | to center the text #default 2                                                                                                                                                        |
 
 Example of the image:
 ```yaml
@@ -221,6 +221,42 @@ Example of the image:
     {% if is_state('binary_sensor.status', 'on') %} Offen {%
     else %} Geschlossen {% endif %}
   title_offset: "10"
+  font_color: "[255, 255, 255]"
+```
+
+<br>
+
+--------------
+### Progress Bar
+*Special page with a progress bar for, for example, the status of the dishwasher or charging status of the car*
+
+| **Keywords**        | **Values**                       |                                                                                                                                                                                     |
+|:--------------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| - page_type: P      | to use this page_type            | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/progressbar.png?raw=true" title="Example of configuration.yaml ProgressBar" align="left" height="150" /> |
+| header              | -required use {{ template }}     | e.g. Dishwasher                                                                                                                                                                     |
+| progress            | -required     use {{ template }} | integer required                                                                                                                                                                    |
+| footer              | -required     use {{ template }} | any footer e.g. Date                                                                                                                                                                | 
+|                     |                                  |                                                                                                                                                                                     |
+| bg_color            | -optional     use "[R, G, B]"    | RGB Color #default blue                                                                                                                                                             |
+| header_offset       | -optional     use int            | integer required      #default 2                                                                                                                                                    |
+| header_font_color   | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                            |
+| progress_bar_color  | -optional     use "[R, G, B]"    | RGB Color #default red                                                                                                                                                              |
+| progress_text_color | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                            |
+| time_color          | -optional     use "[R, G, B]"    | RGB Color #default grey                                                                                                                                                             |
+| footer_offset       | -optional     use int            | integer required      #default 2                                                                                                                                                    |
+| footer_font_color   | -optional     use "[R, G, B]"    | RGB Color #default white                                                                                                                                                            |
+
+
+Example of the image:
+```yaml
+- page_type: progress_bar
+  enabled: >-
+    {% if is_state('sensor.DISHWASCHER_STATE', 'Run') %} true {%
+    else %} false {% endif %}
+  header: DISHWASHER
+  progress: "{{ states.sensor.DISHWASHER_PROGRESS.state }}"
+  footer: ANY FOOTER
+  header_font_color: "[255, 255, 255]"
 ```
 
 <br>

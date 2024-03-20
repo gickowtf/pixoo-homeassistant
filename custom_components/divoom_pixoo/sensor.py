@@ -12,11 +12,10 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.template import Template, TemplateError
 
-from .pixoo64._colors import get_rgb, CSS4_COLORS
+from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
-from .pages.solar import solar
-from .pages.fuel import fuel
-from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX
+from .pages._pages import special_pages
+from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -107,18 +106,15 @@ class Pixoo64(Entity):
         pixoo = self._pixoo
         pixoo.clear()
 
-        if page['page_type'].lower() == "channel":
+        page_type = page['page_type'].lower()
+        if page_type in special_pages:
+            special_pages[page_type](pixoo, self.hass, page)
+            pixoo.push()
+        elif page_type == "channel":
             pixoo.set_custom_page(page['id'])
-        elif page['page_type'].lower() == "clock":
+        elif page_type == "clock":
             pixoo.set_clock(page['id'])
-        elif page['page_type'].lower() == "pv":
-            solar(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO)
-            pixoo.push()
-        elif page['page_type'].lower() == "fuel":
-            _LOGGER.info(f"Fuel = {page}")
-            fuel(pixoo, self.hass, page, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)
-            pixoo.push()
-        elif page['page_type'].lower() == "custom" or page['page_type'].lower() == "components":
+        elif page_type in ["custom", "components"]:
             for component in page['components']:
 
                 if component['type'] == "text":
@@ -137,18 +133,7 @@ class Pixoo64(Entity):
                     elif component['font'] == "FIVE_PIX":
                         font = FIVE_PIX
 
-                    try:
-                        rendered_color = Template(str(component['color']), self.hass).async_render()
-                        if isinstance(rendered_color, list):
-                            rendered_color = tuple(rendered_color)
-                        elif rendered_color in CSS4_COLORS:
-                            rendered_color = get_rgb(rendered_color)
-                        else:
-                            rendered_color = get_rgb("white")
-
-                    except TemplateError as e:
-                        _LOGGER.error("Template render error: %s", e)
-                        rendered_color = get_rgb("white")
+                    rendered_color = render_color(component['color'], self.hass)
 
                     pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font)
 

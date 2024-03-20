@@ -3,6 +3,8 @@ from homeassistant.exceptions import TemplateError
 from datetime import datetime
 import logging
 
+from ..pixoo64._colors import render_color
+
 _LOGGER = logging.getLogger(__name__)
 
 def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX):
@@ -36,15 +38,16 @@ def fuel(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN
         _LOGGER.error("Template render error: %s", e)
         return  # Stop execution if there is a template error
 
-    font_color = tuple(page_data.get('font_color', white))
-    bg_color = tuple(page_data.get('bg_color', yellow))
-    price_color = tuple(page_data.get('price_color', white))
-    title_color = tuple(page_data.get('title_color', black))
-    stripe_color = tuple(page_data.get('stripe_color', font_color))
+    font_color = render_color(page_data.get('font_color'), hass, white)
+    bg_color = render_color(page_data.get('bg_color'), hass, yellow)
+    price_color = render_color(page_data.get('price_color'), hass, white)
+    title_color = render_color(page_data.get('title_color'), hass, black)
+    stripe_color = render_color(page_data.get('stripe_color'), hass, white)
+
     title_offset = int(page_data.get('title_offset', 2))
 
     pixoo.draw_filled_rectangle((0, 57), (64, 64), darkgrey)
-    pixoo.draw_text(status, (1, 58), white, FIVE_PIX)
+    pixoo.draw_text(status, (1, 58), font_color, FIVE_PIX)
 
     #bg for names and prices
     pixoo.draw_filled_rectangle((0, 24), (64, 56), bg_color)
