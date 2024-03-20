@@ -30,7 +30,7 @@ repository into the `custom_components/divoom_pixoo` directory.
 
 **List of pages in JSON * :** 
 
-<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/solar.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" />
+<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/pixoo.gif?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" />
 
 ```yaml
 - page_type: PV
@@ -155,7 +155,7 @@ Photovoltaic - PV is a pre-designed page. The icon changes depending on the batt
 
 | **Keywords**    | **Values**                             |                                                                                                                                                                         |
 |:----------------|:---------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| - page_type: PV | to use this page_type                  | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/solar.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" /> |
+| - page_type: PV | to use this page_type                  | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/solar.png?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" /> |
 | power           | **required**  use {{ template }}       | Current power from the photovoltaic system                                                                                                                              |
 | storage         | **required**      use {{ template }}   | Battery storage in percent                                                                                                                                              |
 | discharge       | **required**      use {{ template }}   | Current charging/discharging power                                                                                                                                      |
@@ -187,24 +187,24 @@ Photovoltaic - PV is a pre-designed page. The icon changes depending on the batt
 
 
 
-| **Keywords**          | **Values**                                         |                                                                                                                                                                                      |
-|:----------------------|:---------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| - page_type: Fuel     | to use this page_type                              | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/gasstation_preview.jpg?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" /> |
-| title                 | -required use {{ template }}                       | Title e.g. Gas Station Name                                                                                                                                                          |
-| name1                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                                       |
-| price1                | -required     use {{ template }}                   | fuel price                                                                                                                                                                           |
-| name2                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                                       |
-| price2                | -required     use {{ template }}                   | fuel price                                                                                                                                                                           |
-| name3                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                                       |
-| price3                | -required     use {{ template }}                   | fuel price                                                                                                                                                                           |
-| status                | -required     use {{ template }}                   | Any extra field in my case an opening status                                                                                                                                         |
-|                       |                                                    |                                                                                                                                                                                      |
-| font_color            | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default white                                                                                                                                                             |
-| bg_color              | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default yellow (255, 230, 0)                                                                                                                                              |
-| price_color           | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default white                                                                                                                                                             |
-| title_color           | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default black                                                                                                                                                             |
-| stripe_color          | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default font_color                                                                                                                                                        |
-| title_offset          | -optional     use integers                         | to center the text #default 2                                                                                                                                                        |
+| **Keywords**          | **Values**                                         |                                                                                                                                                                        |
+|:----------------------|:---------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| - page_type: Fuel     | to use this page_type                              | <img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/fuel.png?raw=true" title="Example of configuration.yaml Solar" align="left" height="150" /> |
+| title                 | -required use {{ template }}                       | Title e.g. Gas Station Name                                                                                                                                            |
+| name1                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                         |
+| price1                | -required     use {{ template }}                   | fuel price                                                                                                                                                             |
+| name2                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                         |
+| price2                | -required     use {{ template }}                   | fuel price                                                                                                                                                             |
+| name3                 | -required     use {{ template }}                   | e.g. fuel type                                                                                                                                                         |
+| price3                | -required     use {{ template }}                   | fuel price                                                                                                                                                             |
+| status                | -required     use {{ template }}                   | Any extra field in my case an opening status                                                                                                                           |
+|                       |                                                    |                                                                                                                                                                        |
+| font_color            | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default white                                                                                                                                               |
+| bg_color              | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default yellow (255, 230, 0)                                                                                                                                |
+| price_color           | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default white                                                                                                                                               |
+| title_color           | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default black                                                                                                                                               |
+| stripe_color          | -optional     use "[R, G, B]" or [Colors](#colors) | RGB Color #default font_color                                                                                                                                          |
+| title_offset          | -optional     use integers                         | to center the text #default 2                                                                                                                                          |
 
 Example of the image:
 ```yaml
