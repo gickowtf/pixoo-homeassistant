@@ -41,7 +41,7 @@ def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
     pixoo.draw_text(rendered_time, (44, 1), white, FONT_PICO_8)
 
     #Power
-    pixoo.draw_image(image_folder + "sunpower.png", (1, 0))
+    pixoo.draw_image(image_folder + "sunpower.png", (2, 1))
 
     if rendered_power >= 1:
         pixoo.draw_text(f'{rendered_power}', (17, 8), yellow, FONT_GICKO)
@@ -55,13 +55,13 @@ def solar(pixoo, hass, page_data, FONT_PICO_8, FONT_GICKO):
 
     for image_path, threshold in battery_images:
         if rendered_storage >= threshold:
-            pixoo.draw_image(image_path, (1, 16))
+            pixoo.draw_image(image_path, (2, 17))
             break
 
     pixoo.draw_text(f"{rendered_storage}%", (17, 25), white, FONT_PICO_8)
 
-    pixoo.draw_image(image_folder + "haus.png", (1, 32))
+    pixoo.draw_image(image_folder + "haus.png", (2, 33))
     pixoo.draw_text(f"{rendered_powerhousetotal}", (17, 40), blue, FONT_GICKO)
 
-    pixoo.draw_image(image_folder + "industry.png", (1, 48))
+    pixoo.draw_image(image_folder + "industry.png", (2, 49))
     pixoo.draw_text(f'{rendered_vomNetz}', (17, 56), grey, FONT_GICKO)
