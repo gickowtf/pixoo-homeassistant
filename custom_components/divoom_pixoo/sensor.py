@@ -52,6 +52,17 @@ class Pixoo64(Entity):
         self._notification_before = datetime.now()
 
     async def async_added_to_hass(self):
+        # Register the buzz service
+        self.hass.services.async_register(
+            DOMAIN,
+            'play_buzzer',
+            self.async_play_buzzer,
+            schema=vol.Schema({
+                vol.Optional('buzz_cycle_time_millis'): int,
+                vol.Optional('idle_cycle_time_millis'): int,
+                vol.Optional('total_time'): int
+            }, extra=vol.ALLOW_EXTRA)
+        )
         if DOMAIN in self.hass.data:
             self.hass.data[DOMAIN].setdefault('entities', []).append(self)
         self._update_interval = async_track_time_interval(
@@ -166,6 +177,17 @@ class Pixoo64(Entity):
         self._notification_before = datetime.now() + duration
     #     By not using the sleep method, HA will show a success thingy in the UI.
     #     If not, the success will only appear after the sleep time.
+
+    # Service to play the buzzer
+    async def async_play_buzzer(self, call):
+        buzz_cycle_time = timedelta(milliseconds=call.data.get('buzz_cycle_time_millis', 500))
+        idle_cycle_time = timedelta(milliseconds=call.data.get('idle_cycle_time_millis', 500))
+        total_time = timedelta(milliseconds=call.data.get('total_time', 3000))
+
+        def buzz():
+            self._pixoo.play_buzzer(buzz_cycle_time, idle_cycle_time, total_time)
+
+        await self.hass.async_add_executor_job(buzz)
 
     @property
     def state(self):

@@ -24,3 +24,47 @@ show_message:
           max: 9999
           unit_of_measurement: seconds
           mode: box
+play_buzzer:
+  name: Play the buzzer on the Divoom Pixoo
+  description: Play the buzzer on the Divoom Pixoo. Beware that this maybe could damage the device. Use at your own risk.
+  target:
+    entity:
+      domain: sensor
+      integration: divoom_pixoo
+  fields:
+    buzz_cycle_time_millis:
+      name: Buzzing Time per cycle.
+      description: "The working time of the buzzer per cycle. The buzzer will not buzz continuously; it will go on and off in cycles (duration in-between not controllable)."
+      default: 500
+      required: false
+      example: "500"
+      selector:
+          number:
+            min: 1
+            max: 9999
+            unit_of_measurement: milliseconds
+            mode: box
+    idle_cycle_time_millis:
+      name: Idle Time per cycle
+      description: "Idle time of the buzzer per cycle."
+      default: 500
+      required: false
+      example: "500"
+      selector:
+          number:
+            min: 1
+            max: 9999
+            unit_of_measurement: milliseconds
+            mode: box
+    total_time:
+        name: Total Time
+        description: "The total time the buzzer will be working."
+        default: 3000
+        required: false
+        example: "3000"
+        selector:
+            number:
+              min: 1
+              max: 9999
+              unit_of_measurement: milliseconds
+              mode: box
