@@ -1,6 +1,6 @@
 show_message:
   name: Send a page to Divoom Pixoo
-  description: Display a specified page on the Divoom Pixoo. Please select the "... Current Page" entity of the device.
+  description: Display a specified page on the Divoom Pixoo.
   target:
     entity:
       domain: sensor
