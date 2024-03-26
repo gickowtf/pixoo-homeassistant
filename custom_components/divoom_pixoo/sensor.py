@@ -118,7 +118,7 @@ class Pixoo64(Entity):
             for component in page['components']:
 
                 if component['type'] == "text":
-                    text_template = Template(component['content'], self.hass)
+                    text_template = Template(str(component['content']), self.hass)
                     try:
                         rendered_text = str(text_template.async_render())
                     except TemplateError as e:
