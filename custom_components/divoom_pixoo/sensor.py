@@ -5,8 +5,7 @@ from datetime import timedelta, datetime
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import entity_platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_time_interval
@@ -21,18 +20,8 @@ from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities):
     async_add_entities([ Pixoo64(config_entry=config_entry, pixoo=hass.data[DOMAIN][config_entry.entry_id]["pixoo"]) ], True)
-
-    platform = entity_platform.current_platform.get()
-    platform.async_register_entity_service(
-        'show_message',
-        {
-            vol.Required('page_data'): dict,
-            vol.Optional('duration'): int
-        },
-        'async_show_message',
-    )
 
 
 class Pixoo64(Entity):
@@ -52,6 +41,17 @@ class Pixoo64(Entity):
         self._notification_before = datetime.now()
 
     async def async_added_to_hass(self):
+        # Register the service
+        self.hass.services.async_register(
+            DOMAIN,
+            'show_message',
+            self.async_show_message,
+            schema=vol.Schema({
+                vol.Required('page_data'): dict,
+                vol.Optional('duration'): int,
+            }, extra=vol.ALLOW_EXTRA)
+        )
+        # Continue with the setup
         if DOMAIN in self.hass.data:
             self.hass.data[DOMAIN].setdefault('entities', []).append(self)
         self._update_interval = async_track_time_interval(
@@ -149,11 +149,9 @@ class Pixoo64(Entity):
     # Service to show a message.
     # Comment: By calling this, it's possible that next_page "skips" a page, therefore looking like a next page takes
     # longer than normal. I'm not 100% certain on how to make this work properly...
-    async def async_show_message(self, page_data, duration=None):
-        if duration is None:
-            duration = self._scan_interval
-        else:
-            duration = timedelta(seconds=duration)
+    async def async_show_message(self, call):
+        page_data = call.data.get('page_data')
+        duration = timedelta(seconds=call.data.get('duration', self._scan_interval.seconds))
 
         if not page_data or not page_data.get('page_type'):
             _LOGGER.error("No page to render.")
