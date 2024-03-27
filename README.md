@@ -311,16 +311,11 @@ Example of the image:
 
 
 
-## Automations as Push Notifications
+## Send a page to Divoom Pixoo Service (show_message)
 
-You can use it for Push Notifications. Trigger with anything! Action with the Service "Divoom Pixoo 64: Send a page to Divoom Pixoo".
+You can use it for Push Notifications. Trigger with anything! Call it with the Service "Divoom Pixoo 64: Send a page to Divoom Pixoo".
 
-**IMPORTANT**
-Display a message on the Divoom Pixoo. Please select the "... Current Page" entity of the device.
-
-In the following dialog you can define your push notification as usual in JSON format.
-
-Everything you can define as a single page can also be used as automation. (Except for the enabled tag.) 
+You can input in the _Page Data_ field the data of **one** page in the normal JSON format. It can be anything! (Please note that the 'enabled' tag doesn't work and that it's normal.)
 
 Some examples of **Page Data:**
 ```yaml
@@ -333,7 +328,7 @@ page_type: components
 components:
   - type: text
     position: [10, 0]
-    content: 2 github/gickowtf #
+    content: 2 github/gickowtf
     font: PICO_8
     color: [255, 0, 0]
   - type: image
