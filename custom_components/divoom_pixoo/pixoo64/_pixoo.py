@@ -1,5 +1,6 @@
 import base64
 import json
+from datetime import timedelta
 from enum import IntEnum
 
 import requests
@@ -383,6 +384,21 @@ class Pixoo:
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/SetEqPosition',
             'EqPosition': equalizer_position
+        }), timeout=self.timeout)
+        data = response.json()
+        if data['error_code'] != 0:
+            self.__error(data)
+
+    # buzz_time 	Working time of buzzer in one cycle in milliseconds
+    # idle_time		Idle time of buzzer in one cycle in milliseconds
+    # total_time	Working total time of buzzer in milliseconds
+    # This is according to the Divoom Docs.
+    def play_buzzer(self, buzz_cycle_time: timedelta, idle_cycle_time: timedelta, total_time: timedelta):
+        response = requests.post(self.__url, json.dumps({
+            'Command': 'Device/PlayBuzzer',
+            'ActiveTimeInCycle': buzz_cycle_time.total_seconds() * 1000,
+            'OffTimeInCycle': idle_cycle_time.total_seconds() * 1000,
+            'PlayTotalTime': total_time.total_seconds()*1000
         }), timeout=self.timeout)
         data = response.json()
         if data['error_code'] != 0:

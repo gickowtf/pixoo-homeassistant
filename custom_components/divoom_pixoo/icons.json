@@ -1,0 +1,6 @@
+{
+  "services": {
+    "show_message": "mdi:file-send",
+    "play_buzzer": "mdi:volume-vibrate"
+  }
+}
