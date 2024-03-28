@@ -68,3 +68,10 @@ play_buzzer:
               max: 9999
               unit_of_measurement: milliseconds
               mode: box
+restart:
+  name: Restart the Divoom Pixoo
+  description: Restart the Divoom Pixoo device. (It has a little bit of delay. Be patient.)
+  target:
+    entity:
+      domain: sensor
+      integration: divoom_pixoo

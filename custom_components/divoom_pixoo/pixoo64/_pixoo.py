@@ -359,6 +359,14 @@ class Pixoo:
         if data['error_code'] != 0:
             self.__error(data)
 
+    def restart_device(self):
+        response = requests.post(self.__url, json.dumps({
+            'Command': 'Device/SysReboot'
+        }), timeout=self.timeout)
+        data = response.json()
+        if data['error_code'] != 0:
+            self.__error(data)
+
     def get_state(self):
         response = requests.post(self.__url, json.dumps({
             'Command': 'Channel/GetAllConf'
