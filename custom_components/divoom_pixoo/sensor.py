@@ -177,7 +177,7 @@ class Pixoo64(Entity):
                         # (If too big, it's handled in the _pixoo class)
 
                         # You can "see" the difference here: https://i.stack.imgur.com/bKlzT.png
-                        rendered_resample_mode = Template(str(component.get('resample_mode', "box")), self.hass).async_render()
+                        rendered_resample_mode = str(Template(str(component.get('resample_mode', "box")), self.hass).async_render()).lower()
                         if rendered_resample_mode == "nearest" or rendered_resample_mode == "pixel_art":
                             resample_mode = Image.NEAREST
                         elif rendered_resample_mode == "bilinear":
