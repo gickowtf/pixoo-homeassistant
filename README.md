@@ -106,11 +106,19 @@ for example:
 | font         | default PICO_8  [Fonts](#fonts)                                                 |
 | color        | default white [R, G, B] or [Colors](#colors)                                    |
 
-| **Keywords**  | **Values**                                                                  |
-|:--------------|:----------------------------------------------------------------------------|
-| - type: image |                                                                             |
-| image_path    | **required** image path like /config/img/haus.png                           |
-| position      | **required** The image [position](#positioning) on a XY axis at 64x64 pixel |
+| **Keywords**   | **Values**                                                                                                                                   |
+|:---------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| - type: image  |                                                                                                                                              |
+|                | **one of following image_xxx is required**                                                                                                   |
+| image_path     | image path like /config/img/haus.png                                                                                                         |
+| image_url      | image url like template {{ entity image }} or https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/pixoo.gif           |
+| image_data     | image data in base64  convert images [here](https://base64.guru/converter/encode/image)                                                      |
+|                |                                                                                                                                              |
+| position       | **required** The image [position](#positioning) on a XY axis at 64x64 pixel                                                                  |
+|                |                                                                                                                                              |
+| height         | **optional** If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional |
+| width          | **optional** If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional |
+| resample_mode  | **optional** default = `box` <br> `nearest`,  `bilinear`,  `hamming`, `bicubic`, `lanczos`                                                   |
 
 ```yaml
 - page_type: components
@@ -124,6 +132,18 @@ for example:
     - type: image
       image_path: /config/img/haus.png
       position: [30, 30]
+    - type: image
+      position: [0, 0]
+      image_url: >-
+        https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/pixoo.gif
+      resample_mode: box #optional
+      height: 30 #optional
+    - type: image
+      position: [30, 0]
+      image_data: >-
+        iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPBAMAAADJ+Ih5AAAAGFBMVEX//8z//5n//2b//zP//wDMzAAAAADAwMB5Mg5mAAAACHRSTlP/////////AN6DvVkAAAABYktHRAcWYYjrAAAAaklEQVR42kXNsQ2AIBBA0Wsc4ExcAKMLGAcwogModzUaOVoqWF8wJHav+h9SEhGfAqQIqMYCm9H7ABEIqd8D2EYWMZv9cSGiWgs6bNWZcfOhBlcxfyBHbMhCnFjcxrn8aK3Jl5cm4vKq9xdiSyWVldcCmgAAAHB0RVh0Y29tbWVudABpY29uNy5naWYgZm9yIHVzZSBpbiBVQkINCg0KKEMpIDE5OTkgUGhpbGlwcCBFc3NlbGJhY2ggKHBsZUBnbXgubmV0KQ0KaHR0cDovL3d3dy5udGdhbWVwYWxhY2UuaXNjb29sLm5ldBIZgm0AAAAASUVORK5CYII=
+      resample_mode: nearest #optional
+      height: 8 #optional
 ```
 <br>
 
@@ -280,8 +300,6 @@ Example of the image:
 
 --------------
 
-<br>
-
 ### clock
 *Channel - In Divoom app you can set three different custom channels which you can select here.*
 
@@ -308,10 +326,24 @@ Example of the image:
 <br>
 
 --------------
+### visualizer
+
+This adds the visualizer page to the integration. The id starts at zero and it represents the clocks from top left to bottom right as can be seen in the app.
+
+<img src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/visualizer.png?raw=true" title="Example of visualizer"/>
+
+```yaml
+- page_type: visualizer
+  id: 2
+```
+<br>
+
+--------------
+
+# Services
 
 
-
-## Send a page to Divoom Pixoo Service (show_message)
+## Service Send a page to Divoom Pixoo (show_message) Push Notification
 
 You can use it for Push Notifications. Trigger with anything! Call it with the Service "Divoom Pixoo 64: Send a page to Divoom Pixoo".
 
@@ -335,6 +367,31 @@ components:
     image_path: /config/img/haus.png
     position: [30, 30]
 ```
+
+<br>
+
+--------------
+## Service Play a Buzzer 
+
+Play the buzzer on the Divoom Pixoo. Beware that this maybe could damage the device. Use at your own risk.
+
+**Buzzing Time per cycle.** in milliseconds `default: 500 milliseconds`<br>
+The working time of the buzzer per cycle. The buzzer will not buzz continuously; it will go on and off in cycles (duration in-between not controllable).
+ 
+**Idle Time per cycle** in milliseconds `default: 500 milliseconds`<br>
+Idle time of the buzzer per cycle.
+
+**Total Time** in milliseconds `default: 3000 milliseconds`<br>
+The total time the buzzer will be working.
+
+<br>
+
+--------------
+
+## Service Restart the Divoom Pixoo
+
+Restart the Divoom Pixoo device. (It has a little bit of delay. Be patient.)
+
 
 <br>
 
