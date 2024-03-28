@@ -63,6 +63,14 @@ class Pixoo64(Entity):
                 vol.Optional('duration'): int,
             }, extra=vol.ALLOW_EXTRA)
         )
+
+        # Register the restart service
+        self.hass.services.async_register(
+            DOMAIN,
+            'restart',
+            self.restart_device,
+            schema=vol.Schema({}, extra=vol.ALLOW_EXTRA)
+        )
         # Continue with the setup
         if DOMAIN in self.hass.data:
             self.hass.data[DOMAIN].setdefault('entities', []).append(self)
@@ -187,6 +195,12 @@ class Pixoo64(Entity):
             self._pixoo.play_buzzer(buzz_cycle_time, idle_cycle_time, total_time)
 
         await self.hass.async_add_executor_job(buzz)
+
+    async def restart_device(self, call):
+        def restart():
+            self._pixoo.restart_device()
+
+        await self.hass.async_add_executor_job(restart)
 
     @property
     def state(self):
