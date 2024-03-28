@@ -124,6 +124,8 @@ class Pixoo64(Entity):
             pixoo.push()
         elif page_type == "channel":
             pixoo.set_custom_page(page['id'])
+        elif page_type == "visualizer":
+            pixoo.set_visualizer(page['id'])
         elif page_type == "clock":
             pixoo.set_clock(page['id'])
         elif page_type in ["custom", "components"]:
