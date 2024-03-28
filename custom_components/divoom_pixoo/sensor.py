@@ -1,8 +1,12 @@
 import asyncio
+import base64
 import logging
 from datetime import timedelta, datetime
+from io import BytesIO
 
+import requests
 import voluptuous as vol
+from PIL import Image
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
@@ -10,6 +14,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.template import Template, TemplateError
+from urllib3.exceptions import NewConnectionError
 
 from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
@@ -161,10 +166,56 @@ class Pixoo64(Entity):
 
                 elif component['type'] == "image":
                     try:
-                        rendered_image_path = Template(str(component['image_path']), self.hass).async_render()
-                        pixoo.draw_image(rendered_image_path, tuple(component['position']))
+                        if "image_path" in component:
+                            # File
+                            rendered_image_path = Template(str(component['image_path']), self.hass).async_render()
+                            img = Image.open(rendered_image_path)
+                        elif "image_url" in component:
+                            # URL/Web
+                            rendered_image_path = Template(str(component['image_url']), self.hass).async_render()
+                            response = requests.get(rendered_image_path, timeout=pixoo.timeout)
+                            img = Image.open(BytesIO(response.content))
+                        elif "image_data" in component:
+                            # Base64
+                            # Use a website like https://base64.guru/converter/encode/image to encode the image.
+                            rendered_image_data = Template(str(component['image_data']), self.hass).async_render()
+                            img = Image.open(BytesIO(base64.b64decode(rendered_image_data)))
+                        else:
+                            continue
+
+                        # If neither width nor height is set, the image will be displayed in its original size.
+                        # (If too big, it's handled in the _pixoo class)
+
+                        # You can "see" the difference here: https://i.stack.imgur.com/bKlzT.png
+                        rendered_resample_mode = str(Template(str(component.get('resample_mode', "box")), self.hass).async_render()).lower()
+                        if rendered_resample_mode == "nearest" or rendered_resample_mode == "pixel_art":
+                            resample_mode = Image.NEAREST
+                        elif rendered_resample_mode == "bilinear":
+                            resample_mode = Image.BILINEAR
+                        elif rendered_resample_mode == "hamming":
+                            resample_mode = Image.HAMMING
+                        elif rendered_resample_mode == "bicubic":
+                            resample_mode = Image.BICUBIC
+                        elif rendered_resample_mode == "antialias" or rendered_resample_mode == "lanczos":
+                            resample_mode = Image.LANCZOS
+                        else:
+                            resample_mode = Image.BOX
+
+                        width = component.get('width')
+                        height = component.get('height')
+
+                        if width and height:
+                            img = img.resize((width, height), resample_mode)
+                        elif width or height:
+                            img.thumbnail((100 if not width else width, 100 if not height else height), resample_mode)
+
+                        pixoo.draw_image(img, tuple(component['position']), image_resample_mode=resample_mode)
                     except TemplateError as e:
                         _LOGGER.error("Template render error: %s", e)
+                    except NewConnectionError as e:
+                        _LOGGER.error("Connection error: %s", e)
+                    except TimeoutError as e:
+                        _LOGGER.error("Timeout error: %s", e)
 
             pixoo.push()
 
