@@ -217,6 +217,26 @@ class Pixoo64(Entity):
                     except TimeoutError as e:
                         _LOGGER.error("Timeout error: %s", e)
 
+                elif component['type'] == "rectangle":
+                    try:
+                        rendered_color = render_color(component['color'], self.hass)
+                        position = ( int(Template(str(component['position'][0])).async_render()), int(Template(str(component['position'][1])).async_render()) )
+                        size = ( int(Template(str(component['size'][0])).async_render()), int(Template(str(component['size'][1])).async_render()) )
+                        size = (size[0] - 1, size[1] - 1)
+
+                        rendered_fill = bool(Template(str(component.get('filled', True)), self.hass).async_render())
+
+                        if rendered_fill:
+                            pixoo.draw_filled_rectangle(position, (position[0] + size[0], position[1] + size[1]), rendered_color)
+                        else:
+                            pixoo.draw_line(position, (position[0] + size[0], position[1]), rendered_color)
+                            pixoo.draw_line((position[0] + size[0], position[1]), (position[0] + size[0], position[1] + size[1]), rendered_color)
+                            pixoo.draw_line((position[0] + size[0], position[1] + size[1]), (position[0], position[1] + size[1]), rendered_color)
+                            pixoo.draw_line((position[0], position[1] + size[1]), position, rendered_color)
+
+                    except TemplateError as e:
+                        _LOGGER.error("Template render error: %s", e)
+
             pixoo.push()
 
     # Service to show a message.
