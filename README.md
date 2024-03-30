@@ -120,6 +120,14 @@ for example:
 | width          | **optional** If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional |
 | resample_mode  | **optional** default = `box` <br> `nearest`,  `bilinear`,  `hamming`, `bicubic`, `lanczos`                                                   |
 
+| **Keywords**      | **Values**                                                                          |
+|:------------------|:------------------------------------------------------------------------------------|
+| - type: rectangle |                                                                                     |
+| position          | **required** rectangle start [position](#positioning) on a XY axis at 64x64 pixel   |
+| size              | **required** start position + size start                                            |
+| color             | **required** [Colors](#colors)                                                      |
+| filled            | **optional** boolean                                                                | 
+
 ```yaml
 - page_type: components
   enabled: "{{ states.input_boolean.YOURS.state }}" #optional
@@ -144,6 +152,11 @@ for example:
         iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPBAMAAADJ+Ih5AAAAGFBMVEX//8z//5n//2b//zP//wDMzAAAAADAwMB5Mg5mAAAACHRSTlP/////////AN6DvVkAAAABYktHRAcWYYjrAAAAaklEQVR42kXNsQ2AIBBA0Wsc4ExcAKMLGAcwogModzUaOVoqWF8wJHav+h9SEhGfAqQIqMYCm9H7ABEIqd8D2EYWMZv9cSGiWgs6bNWZcfOhBlcxfyBHbMhCnFjcxrn8aK3Jl5cm4vKq9xdiSyWVldcCmgAAAHB0RVh0Y29tbWVudABpY29uNy5naWYgZm9yIHVzZSBpbiBVQkINCg0KKEMpIDE5OTkgUGhpbGlwcCBFc3NlbGJhY2ggKHBsZUBnbXgubmV0KQ0KaHR0cDovL3d3dy5udGdhbWVwYWxhY2UuaXNjb29sLm5ldBIZgm0AAAAASUVORK5CYII=
       resample_mode: nearest #optional
       height: 8 #optional
+    - type: rectangle
+      position: [20, 20]
+      size: [10, 10]
+      color: yellow
+      filled: "{{ states.input_boolean.YOURS.state }}" #optional
 ```
 <br>
 
