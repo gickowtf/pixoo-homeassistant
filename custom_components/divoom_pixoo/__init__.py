@@ -56,7 +56,7 @@ async def async_update_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_detect_and_fix_old_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Detect old entry. Called for every entry when HA find the versions don't match."""
-    if "page" in config_entry.options["pages_data"][0]:
+    if config_entry.options["pages_data"] and "page" in config_entry.options["pages_data"][0]:
         # Detected a v1 entry
         config_entry.version = 1
         await async_migrate_entry(hass, config_entry)
