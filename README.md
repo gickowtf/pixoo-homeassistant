@@ -263,6 +263,9 @@ Example of the image:
 | progress_bar_color  | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default red                                                                                                                                                              |
 | progress_text_color | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default white                                                                                                                                                            |
 | time_color          | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default grey                                                                                                                                                             |
+| time_end          | -optional     use {{ template }}  | datetime required, #default None                                                                                                                                                             |
+| time_end_color          | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default ligh_grey                                                                                                                                                             |
+
 | footer_offset       | -optional     use int                               | integer required      #default 2                                                                                                                                                    |
 | footer_font_color   | -optional     use "[R, G, B]" or [Colors](#colors)  | RGB Color #default white                                                                                                                                                            |
 
