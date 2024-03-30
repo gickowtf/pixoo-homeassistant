@@ -43,21 +43,21 @@ def progress_bar(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX
     footer_offset = int(page_data.get('footer_offset', 2))
 
     #backgroundcolor
-    pixoo.draw_filled_rectangle((0,0), (63,63), bg_color)
+    pixoo.draw_filled_rectangle((0, 0), (63, 63), bg_color)
 
     #header
-    pixoo.draw_filled_rectangle((0,0), (63,6), grey)
+    pixoo.draw_filled_rectangle((0, 0), (63, 6), grey)
     pixoo.draw_text(header, (header_offset, 1), header_font_color , FIVE_PIX)
 
     #progress bar
     pixoo.draw_filled_rectangle((2, 25), (61, 33), grey)
-    percent_size = int(60/100 * progress)
-    pixoo.draw_filled_rectangle((3,26),(percent_size,32), progress_bar_color)
-    pixoo.draw_text(f"{progress} %", (4,27), progress_text_color, FONT_PICO_8)
+    percent_size = int(60 / 100 * progress)
+    pixoo.draw_filled_rectangle((3, 26),(percent_size, 32), progress_bar_color)
+    pixoo.draw_text(f"{progress} %", (4, 27), progress_text_color, FONT_PICO_8)
 
     #time
-    pixoo.draw_text(time, (15,10), time_color, CLOCK)
+    pixoo.draw_text(time, (15, 10), time_color, CLOCK)
 
     #footer
-    pixoo.draw_filled_rectangle((0,57), (63, 63), grey)
-    pixoo.draw_text(footer, (footer_offset,58), footer_font_color, FIVE_PIX)
+    pixoo.draw_filled_rectangle((0, 57), (63, 63), grey)
+    pixoo.draw_text(footer, (footer_offset, 58), footer_font_color, FIVE_PIX)
