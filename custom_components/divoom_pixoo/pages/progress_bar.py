@@ -13,10 +13,17 @@ def progress_bar(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX
     #Datetime
     now = datetime.now()
     time = now.strftime("%H:%M")
+    # Custom time_end, if provided
+    if time_end := page_data.get("time_end", ""):
+        time_end = (
+            datetime.fromisoformat(time_end)
+            .astimezone(now.astimezone().tzinfo)
+            .strftime("%H:%M")
+        )
 
     red = (255, 0, 68)
     grey = (51, 51, 51)
-    timeColor = (51, 51, 51)
+    light_grey = (151, 151, 151)
     white = (255, 255, 255)
     blue = (0, 123, 255)
 
@@ -36,7 +43,8 @@ def progress_bar(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX
     header_font_color = render_color(page_data.get('header_font_color'), hass, white)
     progress_bar_color = render_color(page_data.get('progress_bar_color'), hass, red)
     progress_text_color = render_color(page_data.get('progress_text_color'), hass, white)
-    time_color = render_color(page_data.get('time_color'), hass, timeColor)
+    time_color = render_color(page_data.get('time_color'), hass, grey)
+    time_end_color = render_color(page_data.get('time_end_color'), hass, light_grey)
     footer_font_color = render_color(page_data.get('footer_font_color'), hass, white)
 
     header_offset = int(page_data.get('header_offset', 2))
@@ -57,6 +65,7 @@ def progress_bar(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX
 
     #time
     pixoo.draw_text(time, (15, 10), time_color, CLOCK)
+    pixoo.draw_text(time_end, (15, 37), time_end_color, CLOCK)
 
     #footer
     pixoo.draw_filled_rectangle((0, 57), (63, 63), grey)
