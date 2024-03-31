@@ -15,7 +15,7 @@ show_message:
         object:
     duration:
       name: Duration of the notification
-      description: "This will be the time the message is displayed on the device. Default: the device's scan_time in the config."
+      description: "This will be the time the message is displayed on the device. Default: the device's scan_time in the config. This only applies if the config's page list is used."
       required: false
       example: "10"
       selector:
