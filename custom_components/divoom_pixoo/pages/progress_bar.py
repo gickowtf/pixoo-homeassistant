@@ -3,6 +3,7 @@ from homeassistant.helpers.template import Template
 from homeassistant.exceptions import TemplateError
 from datetime import datetime
 import logging
+import re
 from ..pixoo64._colors import render_color
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,19 +28,12 @@ def progress_bar(pixoo, hass, page_data: dict, FONT_PICO_8, FONT_GICKO, FIVE_PIX
         header = str(Template(page_data['header'], hass).async_render())
         progress = int(Template(page_data['progress'], hass).async_render())
         footer = str(Template(page_data['footer'], hass).async_render())
-        # Custom time_end, if provided
-        if time_end := str(Template(page_data.get("time_end", ""), hass).async_render()):
-            # Take rendered template and see if it is an isoformat of datetime,
-            # which is the default for rendering str(datetime)
-            try:
-                time_end = (
-                    datetime.fromisoformat(time_end)
-                    .astimezone(now.astimezone().tzinfo)  # Convert to the timezone being shown in the clock above
-                    .strftime("%H:%M")
-                )
-            except ValueError:
-                _LOGGER.error("Template time_end %s results in an invalid isoformat string.", page_data.get("time_end"))
-                return  # Stop execution if time_end is provided and it's invalid
+        # time_end, if provided
+        time_end = re.sub(  # using CLOCK font, only /[0-9:]/ are allowed
+            r"[^0-9:]",
+            "",
+            str(Template(page_data.get("time_end", ""), hass).async_render()),
+        )
 
     except TemplateError as e:
         _LOGGER.error("Template render error: %s", e)
