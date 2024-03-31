@@ -122,9 +122,10 @@ class Pixoo64(Entity):
                 is_enabled = False
 
             if is_enabled:
+                duration = float(self.page.get('duration', self._scan_interval.total_seconds()))
                 self.schedule_update_ha_state()
                 await self.hass.async_add_executor_job(self._render_page, self.page)
-                await self.async_schedule_next_page(self._scan_interval.total_seconds())
+                await self.async_schedule_next_page(duration)
             else:
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
                 iteration_count += 1
