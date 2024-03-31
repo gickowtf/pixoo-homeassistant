@@ -14,17 +14,7 @@
   
   
 
-Custom component for easy use of a Pixoo64 within Home Assistant.
-
-With this integration you have the possibility to display different designs and personalize them with information from the Home Assistant.
-
-For example, you can use this integration to display several texts {{ templates }} and images on one page.
-
-You can also use this integration to determine how long you want to see a page, e.g. you can set the page to change every 15 seconds.
-
-In addition, you also have a light entity for switching the display on and off or changing the brightness.
-
-Last but not least, you can create automations with which you can use certain triggers to display the pages that are available to you as a push.
+Custom component for easy use of a Pixoo64 within Home Assistant. With this integration you have the possibility to display different designs and personalize them with information from the Home Assistant. For example, you can use this integration to display several texts {{ templates }} and images on one page. You can also use this integration to determine how long you want to see a page, e.g. you can set the page to change every 15 seconds. In addition, you also have a light entity for switching the display on and off or changing the brightness. Last but not least, you can create automations with which you can use certain triggers to display the pages that are available to you as a push.
 
   
 
