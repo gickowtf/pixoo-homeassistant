@@ -254,8 +254,9 @@ class Pixoo64(Entity):
             self._render_page(page_data)
 
         await self.hass.async_add_executor_job(draw)
-        self._update_task.cancel()
-        await self.async_schedule_next_page(duration.total_seconds())
+        if self._update_task:
+            self._update_task.cancel()
+            await self.async_schedule_next_page(duration.total_seconds())
 
     # Service to play the buzzer
     async def async_play_buzzer(self, call):
