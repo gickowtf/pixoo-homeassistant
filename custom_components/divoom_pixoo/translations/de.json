@@ -15,7 +15,7 @@
                 "data": {
                     "ip_address": "IP-Adresse des Geräts",
                     "scan_interval": "Überprüfungsintervall (in Sekunden)",
-                    "pages_data": "Liste der Seiten in JSON"
+                    "pages_data": "Liste der Seiten in YAML"
                 }
             }
         },
