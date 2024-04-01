@@ -1,7 +1,8 @@
 import asyncio
 import base64
 import logging
-from datetime import timedelta, datetime
+from asyncio import Task
+from datetime import timedelta
 from io import BytesIO
 
 import requests
@@ -12,10 +13,10 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.template import Template, TemplateError
 from urllib3.exceptions import NewConnectionError
 
+from . import Pixoo
 from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
@@ -31,19 +32,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
 
 class Pixoo64(Entity):
 
-    def __init__(self, pages="", scan_interval=timedelta(seconds=15), pixoo=None, config_entry=None):
+    def __init__(self, pixoo: Pixoo, config_entry: ConfigEntry):
         # self._ip_address = ip_address
         self._pixoo = pixoo
         self._config_entry = config_entry
-        self._pages = self._config_entry.options.get('pages_data', pages)
-        self._scan_interval = timedelta(seconds=int(self._config_entry.options.get('scan_interval', scan_interval)))
+        self._pages = self._config_entry.options.get('pages_data', "")
+        self._scan_interval = timedelta(seconds=int(self._config_entry.options.get('scan_interval', timedelta(seconds=15))))
         self._current_page_index = -1  # Start at -1 so that the first page is 0.
-        self._current_page = None
         self._attr_has_entity_name = True
         self._attr_name = 'Current Page'
         self._attr_extra_state_attributes = {'TotalPages': len(self._pages)}
         _LOGGER.debug("All pages for %s: %s", self._pixoo.address, self._pages)
-        self._notification_before = datetime.now()
+        self._update_task: None | Task = None
 
     async def async_added_to_hass(self):
         # Register the buzz service
@@ -79,26 +79,27 @@ class Pixoo64(Entity):
         # Continue with the setup
         if DOMAIN in self.hass.data:
             self.hass.data[DOMAIN].setdefault('entities', []).append(self)
-        self._update_interval = async_track_time_interval(
-            self.hass,
-            self._async_update,
-            self._scan_interval
-        )
-        await self._async_update()
+        await self._async_next_page()
 
     async def async_will_remove_from_hass(self):
         """When entity is being removed from hass."""
-        if self._update_interval is not None:
-            self._update_interval()
-            self._update_interval = None
+        pass
 
-    async def _async_update(self, now=None):
-        _LOGGER.debug("Update called at %s for %s", now, self._pixoo.address)
-        await self._async_next_page()
+    async def async_schedule_next_page(self, wait_time: float):
+        _LOGGER.debug("Scheduling next page in %s seconds for %s", wait_time, self._pixoo.address)
+
+        async def task():
+            try:
+                await asyncio.sleep(wait_time)
+                await self._async_next_page()
+            except asyncio.CancelledError:
+                _LOGGER.debug('Next page timer cancelled for %s', self._pixoo.address)
+        # Using HA's async_create_task instead of asyncio.create_task because it's better for HA.
+        # (Also, from the docs, it automatically cancels the task when the entry is unloaded.)
+        self._update_task = self._config_entry.async_create_background_task(self.hass, task(), "pixoo-next-page-timer")
 
     async def _async_next_page(self):
-        if self._notification_before > datetime.now():
-            return
+        _LOGGER.debug("Loading next page for %s", self._pixoo.address)
 
         if len(self._pages) == 0:
             return
@@ -121,8 +122,10 @@ class Pixoo64(Entity):
                 is_enabled = False
 
             if is_enabled:
+                duration = float(self.page.get('duration', self._scan_interval.total_seconds()))
                 self.schedule_update_ha_state()
                 await self.hass.async_add_executor_job(self._render_page, self.page)
+                await self.async_schedule_next_page(duration)
             else:
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
                 iteration_count += 1
@@ -240,8 +243,6 @@ class Pixoo64(Entity):
             pixoo.push()
 
     # Service to show a message.
-    # Comment: By calling this, it's possible that next_page "skips" a page, therefore looking like a next page takes
-    # longer than normal. I'm not 100% certain on how to make this work properly...
     async def async_show_message(self, call):
         page_data = call.data.get('page_data')
         duration = timedelta(seconds=call.data.get('duration', self._scan_interval.seconds))
@@ -254,9 +255,9 @@ class Pixoo64(Entity):
             self._render_page(page_data)
 
         await self.hass.async_add_executor_job(draw)
-        self._notification_before = datetime.now() + duration
-    #     By not using the sleep method, HA will show a success thingy in the UI.
-    #     If not, the success will only appear after the sleep time.
+        if self._update_task:
+            self._update_task.cancel()
+            await self.async_schedule_next_page(duration.total_seconds())
 
     # Service to play the buzzer
     async def async_play_buzzer(self, call):
