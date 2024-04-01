@@ -148,20 +148,23 @@ class Pixoo64(Entity):
             for component in page['components']:
 
                 if component['type'] == "text":
-                    text_template = Template(str(component['content']), self.hass)
                     try:
-                        rendered_text = str(text_template.async_render())
+                        rendered_text = str( Template(str(component['content']), self.hass).async_render() )
                     except TemplateError as e:
                         _LOGGER.error("Template render error: %s", e)
                         rendered_text = "Template Error"
 
-                    font = FONT_PICO_8  # Font by default.
-                    if component['font'] == "PICO_8":
-                        font = FONT_PICO_8
-                    elif component['font'] == "GICKO":
+                    font_name = component['font'].lower()
+                    if font_name == "gicko":
                         font = FONT_GICKO
-                    elif component['font'] == "FIVE_PIX":
+                    elif font_name == "five_pix":
                         font = FIVE_PIX
+                    elif font_name == "eleven_pix":
+                        font = ELEVEN_PIX
+                    elif font_name == "clock":
+                        font = CLOCK
+                    else:
+                        font = FONT_PICO_8  # Font by default.
 
                     rendered_color = render_color(component['color'], self.hass)
 
