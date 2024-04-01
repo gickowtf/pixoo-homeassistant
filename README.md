@@ -181,7 +181,7 @@ Example
 
 ## Page: Channel
 *In Divoom app you can set three different custom channels which you can select here.*
-
+*Note: The Divoom custom channel pic cycle rate must be set in the app itself*
   \- page_type: channel
 
  - Channel 1 = `id: 0`
@@ -525,8 +525,77 @@ color: >-
 ['on']) else [0,255,0] }}
 ```
 
-  
+## Example: Animations through automations 
+Note: In this example we're using a count helper to act as a countdown
 
+```yaml
+alias: pixoo64 - auto-ani
+description: ""
+trigger: []
+condition: []
+action:
+  - service: counter.reset
+    metadata: {}
+    data: {}
+    target:
+      entity_id: counter.pixoo_5s_count_down
+  - repeat:
+      count: 20
+      sequence:
+        - service: divoom_pixoo.show_message
+          target:
+            entity_id: sensor.divoom_pixoo_64_current_page
+          data:
+            page_data:
+              page_type: components
+              components:
+                - type: text
+                  position:
+                    - 0
+                    - 30
+                  content: "Auth Check in: {{ states('counter.pixoo_5s_count_down') }}"
+                  font: PICO_8
+                  color: white
+                - type: image
+                  image_url: https://pub.inflowbogie.dev/lock_closed.png
+                  position:
+                    - 0
+                    - 40
+                  resample_mode: box
+                  height: 20
+                - type: image
+                  image_url: https://pub.inflowbogie.dev/key.png
+                  position:
+                    - "{{ 2 * states('counter.pixoo_5s_count_down') }}"
+                    - 50
+                  resample_mode: box
+                  height: 7
+        - service: counter.decrement
+          metadata: {}
+          data: {}
+          target:
+            entity_id: counter.pixoo_5s_count_down
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 1
+            milliseconds: 0
+        - if:
+            - condition: state
+              entity_id: counter.pixoo_5s_count_down
+              state: "0"
+          then:
+            - service: counter.reset
+              metadata: {}
+              data: {}
+              target:
+                entity_id: counter.pixoo_5s_count_down
+mode: single
+
+```
+
+
+![animated](https://pub.inflowbogie.dev/authCheck.gif) 
 
 # References
 
