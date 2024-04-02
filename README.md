@@ -208,6 +208,30 @@ Example usage:
       position: [17, 18]
 ```
 
+--------------
+
+## Page: Channel
+*In Divoom app you can set three different custom channels which you can select here.*
+*Note: The Divoom custom channel pic cycle rate must be set in the app itself*
+  \- page_type: channel
+
+ - Channel 1 = `id: 0`
+ - Channel 2 = `id: 1`
+ - Channel 3 = `id: 2`
+
+
+| **Config Options** | **required** | **Default** | **Values** | 
+|--------------------|:------------:|-------------|------------|
+| id                 |     Yes      |             | Integer    |
+
+Example:
+```yaml
+- page_type: channel
+  id: 0
+```
+
+--------------
+
 
 ## Page: Clock
 *In Divoom app, there's a big list of clocks that you can set to your device.*
