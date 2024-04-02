@@ -8,7 +8,7 @@ from .pixoo64 import Pixoo
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, update=False):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Divoom Pixoo from a config entry."""
     if DOMAIN not in hass.data:
         hass.data[DOMAIN] = {}
@@ -27,8 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, update=Fals
     hass.data[DOMAIN][entry.entry_id]['entry_data'] = entry.options
 
     await hass.config_entries.async_forward_entry_setups(entry, ["light", "sensor"])
-    if not update:
-        entry.add_update_listener(async_update_entry)
+    hass.data[DOMAIN][entry.entry_id]['update_listener'] = entry.add_update_listener(async_update_entry)
 
     return True
 
@@ -42,15 +41,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry. Called by HA."""
     _LOGGER.debug("Unload entry %s.", entry.entry_id)
 
+    hass.data[DOMAIN][entry.entry_id]['update_listener']()  # Unlisten the update listener
     del hass.data[DOMAIN][entry.entry_id]
 
     return await hass.config_entries.async_unload_platforms(entry, ["light", "sensor"])
 
 
 async def async_update_entry(hass: HomeAssistant, entry: ConfigEntry):
-    # Called by HA when the config entry is updated.
+    # Called by HA when the config entry is updated. Reloads don't count!
     await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry, True)
+    await async_setup_entry(hass, entry)
     _LOGGER.debug("Updated entry %s.", entry.entry_id)
 
 
