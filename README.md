@@ -77,7 +77,7 @@ In addition, all page types can be dynamically set to Enable/Disable based on HA
 
 | **Config Options** | **required** | **Default** | **Values**                                                            | 
 |--------------------|:------------:|:-----------:|-----------------------------------------------------------------------|
-| enabled            |      F       |    true     | bool or {{ template }} *#expects  state = 'true', 'yes', 'on' or '1'* |
+| enabled            |      No      |    true     | bool or {{ template }} *#expects  state = 'true', 'yes', 'on' or '1'* |
 
 ```yaml
 - page_type: PAGE_TYPE
@@ -86,9 +86,9 @@ In addition, all page types can be dynamically set to Enable/Disable based on HA
 
 You can also set the duration of a page in seconds. This will override the scan interval set in the device settings.
 
-| **Config Options** | **required** | **Default** | **Values**                | 
-|--------------------|:------------:|:-----------:|---------------------------|
-| duration           |      F       |    true     | integer/float in seconds  |
+| **Config Options** | **required** |     **Default**     | **Values**                | 
+|--------------------|:------------:|:-------------------:|---------------------------|
+| duration           |      No      | (The Scan Interval) | integer/float in seconds  |
 
 ```yaml
 - page_type: PAGE_TYPE
@@ -126,10 +126,10 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
  
 | **Config Options** | **required** | **Default** | **Values**                                                              | 
 |--------------------|:------------:|-------------|-------------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
-| content            |      T       |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
-| font               |      F       | PICO_8      | [Fonts](#fonts)                                                         |
-| color              |      F       | white       | [R, G, B] or [Colors](#color-presets)                                   |
+| position           |     Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
+| content            |     Yes      |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
+| font               |      No      | PICO_8      | [Fonts](#fonts)                                                         |
+| color              |      No      | white       | [R, G, B] or [Colors](#color-presets)                                   |
 
   Example
 ```yaml
@@ -140,15 +140,15 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 
 #### Component: Image
 
-| **Config Options** | **required** | **Default** | **Values**                                                                                                                          | 
-|--------------------|:------------:|-------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel                                                                    |
-| image_path         | T (pick one) |             | image path like /config/img/haus.png                                                                                                |
-| image_url          | T (pick one) |             | image url like template {{ entity image }} or https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/fuel.png   |
-| image_data         | T (pick one) |             | image data in base64. Convert images [here](https://base64.guru/converter/encode/image).                                            |
-| height             |      F       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
-| width              |      F       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
-| resample_mode      |      F       | `box`       | `box`, `nearest`, `bilinear`, `hamming`, `bicubic`, `lanczos`                                                                       |
+| **Config Options** | **required**  | **Default** | **Values**                                                                                                                          | 
+|--------------------|:-------------:|-------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| position           |      Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel                                                                    |
+| image_path         | Yes(pick one) |             | image path like /config/img/haus.png                                                                                                |
+| image_url          | Yes(pick one) |             | image url like template {{ entity image }} or https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/fuel.png   |
+| image_data         | Yes(pick one) |             | image data in base64. Convert images [here](https://base64.guru/converter/encode/image).                                            |
+| height             |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
+| width              |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
+| resample_mode      |      No       | `box`       | `box`, `nearest`, `bilinear`, `hamming`, `bicubic`, `lanczos`                                                                       |
 
 Example
 ```yaml
@@ -164,10 +164,10 @@ Example
 
 | **Config Options** | **required** | **Default** | **Values**                                                           | 
 |--------------------|:------------:|-------------|----------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel     |
-| size               |      T       |             | final size of the rectangle. looks like [width, height]              |
-| color              |      F       |             | [R, G, B] or [Colors](#color-presets)                                |
-| filled             |      F       |             | boolean                                                              |
+| position           |     Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel     |
+| size               |     Yes      |             | final size of the rectangle. looks like [width, height]              |
+| color              |      No      |             | [R, G, B] or [Colors](#color-presets)                                |
+| filled             |      No      |             | boolean                                                              |
 
 Example
 ```yaml
@@ -217,7 +217,7 @@ Example usage:
 
 | **Config Options** | **required** | **Default** | **Values**                                                                                                 | 
 |--------------------|:------------:|-------------|------------------------------------------------------------------------------------------------------------|
-| id                 |      T       |             | Clock ID [list of clock ID's](https://github.com/gickowtf/pixoo-homeassistant/blob/main/READMES/CLOCKS.md) |
+| id                 |     Yes      |             | Clock ID [list of clock ID's](https://github.com/gickowtf/pixoo-homeassistant/blob/main/READMES/CLOCKS.md) |
 
 Example:
 ```yaml
@@ -239,7 +239,7 @@ This adds the visualizer page to the integration.
 
 | **Config Options** | **required** | **Default** | **Values**              | 
 |--------------------|:------------:|-------------|-------------------------|
-| id                 |      T       |             | Clock (visualizer) ID   | 
+| id                 |     Yes      |             | Clock (visualizer) ID   | 
 
 <br>
 
@@ -280,17 +280,17 @@ Photovoltaic - PV is a pre-designed page. The icon changes depending on the batt
 
 | **Config Options**  | **required** | **Default** | **Values**                                       | 
 |---------------------|:------------:|-------------|--------------------------------------------------|
-| header              |      T       |             | string or use {{ template }}  *e.g. Dishwasher*  |
-| progress            |      T       |             | integer or use {{ template }}                    |
-| footer              |      T       |             | string or use {{ template }}  *e.g. Date*        |
-| bg_color            |      F       | blue        | use "[R, G, B]" or [Colors](#color-presets)      |
-| header_offset       |      F       | 2           | integer                                          |
-| header_font_color   |      F       | white       | use "[R, G, B]" or [Colors](#color-presets)      |
-| progress_bar_color  |      F       | red         | use "[R, G, B]" or [Colors](#color-presets)      |
-| progress_text_color |      F       | white       | use "[R, G, B]" or [Colors](#color-presets)      |
-| time_color          |      F       | grey        | use "[R, G, B]" or [Colors](#color-presets)      |
-| footer_offset       |      F       | 2           | integer                                          |
-| footer_font_color   |      F       | white       | use "[R, G, B]" or [Colors](#color-presets)      |
+| header              |     Yes      |             | string or use {{ template }}  *e.g. Dishwasher*  |
+| progress            |     Yes      |             | integer or use {{ template }}                    |
+| footer              |     Yes      |             | string or use {{ template }}  *e.g. Date*        |
+| bg_color            |      No      | blue        | use "[R, G, B]" or [Colors](#color-presets)      |
+| header_offset       |      No      | 2           | integer                                          |
+| header_font_color   |      No      | white       | use "[R, G, B]" or [Colors](#color-presets)      |
+| progress_bar_color  |      No      | red         | use "[R, G, B]" or [Colors](#color-presets)      |
+| progress_text_color |      No      | white       | use "[R, G, B]" or [Colors](#color-presets)      |
+| time_color          |      No      | grey        | use "[R, G, B]" or [Colors](#color-presets)      |
+| footer_offset       |      No      | 2           | integer                                          |
+| footer_font_color   |      No      | white       | use "[R, G, B]" or [Colors](#color-presets)      |
 
 Example:
 
@@ -316,21 +316,21 @@ Example:
 
 | **Config Options** | **required** | **Default**          | **Values**                                                                   | 
 |--------------------|:------------:|----------------------|------------------------------------------------------------------------------|
-| title              |      T       |                      | string - can use {{ template }}  e.g. Gas Station Name                       |
-| name1              |      T       |                      | string - can use {{ template }} *e.g. fuel type*                             |   
-| price1             |      T       |                      | use {{ template }}   *e.g. fuel price*                                       |  
-| name2              |      T       |                      | string - can use {{ template }}                                              |   
-| price2             |      T       |                      | use {{ template }}                                                           |   
-| name3              |      T       |                      | string - can use {{ template }}                                              |       
-| price3             |      T       |                      | use {{ template }} eg. fuel price                                            |
-| status             |      T       |                      | string - can use {{ template }} Any extra field in my case an opening status |
+| title              |     Yes      |                      | string - can use {{ template }}  e.g. Gas Station Name                       |
+| name1              |     Yes      |                      | string - can use {{ template }} *e.g. fuel type*                             |   
+| price1             |     Yes      |                      | use {{ template }}   *e.g. fuel price*                                       |  
+| name2              |     Yes      |                      | string - can use {{ template }}                                              |   
+| price2             |     Yes      |                      | use {{ template }}                                                           |   
+| name3              |     Yes      |                      | string - can use {{ template }}                                              |       
+| price3             |     Yes      |                      | use {{ template }} eg. fuel price                                            |
+| status             |     Yes      |                      | string - can use {{ template }} Any extra field in my case an opening status |
 |                    |              |                      |                                                                              |
-| font_color         |      F       | white                | "[R, G, B]" or [Colors](#color-presets)                                      |       
-| bg_color           |      F       | yellow (255, 230, 0) | "[R, G, B]" or [Colors](#color-presets)                                      |              
-| price_color        |      F       | white                | "[R, G, B]" or [Colors](#color-presets)                                      |
-| title_color        |      F       | black                | "[R, G, B]" or [Colors](#color-presets)                                      |
-| stripe_color       |      F       | font_color           | "[R, G, B]" or [Colors](#color-presets)                                      |         
-| title_offset       |      F       | 2                    | integer *used to center the text*                                            |
+| font_color         |      No      | white                | "[R, G, B]" or [Colors](#color-presets)                                      |       
+| bg_color           |      No      | yellow (255, 230, 0) | "[R, G, B]" or [Colors](#color-presets)                                      |              
+| price_color        |      No      | white                | "[R, G, B]" or [Colors](#color-presets)                                      |
+| title_color        |      No      | black                | "[R, G, B]" or [Colors](#color-presets)                                      |
+| stripe_color       |      No      | font_color           | "[R, G, B]" or [Colors](#color-presets)                                      |         
+| title_offset       |      No      | 2                    | integer *used to center the text*                                            |
 
 Example of the image:
 
