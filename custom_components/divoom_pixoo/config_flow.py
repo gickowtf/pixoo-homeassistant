@@ -88,7 +88,7 @@ class ConfigFlowHandler(config_entries.ConfigFlow, config_entries.OptionsFlow, d
                     "scan_interval"))): NumberSelector(
                     NumberSelectorConfig(min=1, max=9999, step=1, mode=NumberSelectorMode.BOX, unit_of_measurement="seconds")
                 ),
-                vol.Required("pages_data",
+                vol.Optional("pages_data",
                              default=user_input.get("pages_data",
                                                     self.entry_options.get("pages_data"))): ObjectSelector(
                     ObjectSelectorConfig()
