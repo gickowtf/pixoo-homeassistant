@@ -108,7 +108,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
  
 | **Config Options** | **required** | **Default** | **Values**                                                              | 
 |--------------------|:------------:|-------------|-------------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
+| position           |     T        |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
 | content            |      T       |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
 | font               |      F       | PICO_8      | [Fonts](#fonts)                                                         |
 | color              |      F       | white       | [R, G, B] or [Colors](#color-presets)                                   |
