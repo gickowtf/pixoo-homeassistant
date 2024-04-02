@@ -597,12 +597,12 @@ mode: single
 
 ## Fonts
 
-| Font       | Image                                          |
-|------------|------------------------------------------------|
-| gicko      | ![FONT_GICKO.png](images%2FFONT_GICKO.png)     |
-| five_pix   | ![five_pix.png](images%2Ffive_pix.png)         |
-| PICO_8     | ![PICO_8.png](images%2FPICO_8.png)             |
-| eleven_pix | ![eleven_pix.png](images%2Feleven_pix.png)     |
+| Font       | Image                                        |
+|------------|----------------------------------------------|
+| gicko      | ![FONT_GICKO.png](images%2FFONT_GICKO.png)   |
+| five_pix   | ![five_pix.png](images%2Ffive_pix.png)       |
+| PICO_8     | ![PICO_8.png](images%2FPICO_8.png)           |
+| eleven_pix | ![eleven_pix.png](images%2Feleven_pix.png)   |
 
   
 
