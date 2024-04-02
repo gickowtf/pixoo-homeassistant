@@ -128,7 +128,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 |--------------------|:------------:|-------------|-------------------------------------------------------------------------|
 | position           |     Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
 | content            |     Yes      |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
-| font               |      No      | PICO_8      | [Fonts](#fonts)                                                         |
+| font               |      No      | pico_8      | [Fonts](#fonts)                                                         |
 | color              |      No      | white       | [R, G, B] or [Colors](#color-presets)                                   |
 
   Example
@@ -196,7 +196,7 @@ Example usage:
     - type: text
       content: "{{ power }}"
       color: "{{ [255,175,0] if power|int >= 1 else [131,131,131] }}"
-      font: GICKO
+      font: gicko
       position: [17,8]
     - type: image
       image_path: "{{ '/config/custom_components/divoom_pixoo/img/akku80-100.png' if storage|int >= 80 else '/config/custom_components/divoom_pixoo/img/akku60-80.png' if storage|int >= 60 else '/config/custom_components/divoom_pixoo/img/akku40-60.png' if storage|int >= 40 else '/config/custom_components/divoom_pixoo/img/akku20-40.png' if storage|int >= 20 else '/config/custom_components/divoom_pixoo/img/akku00-20.png'}}"
@@ -204,7 +204,7 @@ Example usage:
     - type: text
       content: "{{ storage }}"
       color: "{{ [255,0,68] if storage|int <= 0 else [4,204,2] }}"
-      font: GICKO
+      font: gicko
       position: [17, 18]
 ```
 
@@ -425,7 +425,7 @@ components:
   - type: text
     position: [10,  0]
     content: 2 github/gickowtf
-    font: PICO_8
+    font: gicko
     color: [255,  0,  0]
   - type: image
     image_path: /config/img/haus.png
@@ -491,7 +491,6 @@ Binary sensors are the easiest to start with, as they simply live in one of two 
 - page_type: components
   components:
     - type: text
-      font: PICO_8
       position: [0,0]
       color: white
       content: "Motion-FL1: {{ states('binary_sensor.MotionDetector') }}"
@@ -577,7 +576,7 @@ action:
                     - 0
                     - 30
                   content: "Auth Check in: {{ states('counter.pixoo_5s_count_down') }}"
-                  font: PICO_8
+                  font: pico_8
                   color: white
                 - type: image
                   image_url: https://pub.inflowbogie.dev/lock_closed.png
