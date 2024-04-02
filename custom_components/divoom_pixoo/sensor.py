@@ -154,7 +154,7 @@ class Pixoo64(Entity):
                         _LOGGER.error("Template render error: %s", e)
                         rendered_text = "Template Error"
 
-                    font_name = component['font'].lower()
+                    font_name = component.get('font', "").lower()
                     if font_name == "gicko":
                         font = FONT_GICKO
                     elif font_name == "five_pix":
@@ -166,7 +166,7 @@ class Pixoo64(Entity):
                     else:
                         font = FONT_PICO_8  # Font by default.
 
-                    rendered_color = render_color(component['color'], self.hass)
+                    rendered_color = render_color(component.get("color"), self.hass)
 
                     pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font)
 
