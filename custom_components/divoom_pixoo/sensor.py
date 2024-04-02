@@ -145,12 +145,17 @@ class Pixoo64(Entity):
         elif page_type == "clock":
             pixoo.set_clock(page['id'])
         elif page_type in ["custom", "components"]:
+            variables = page.get('variables', {})
+            rendered_variables = {}
+            for var_name in variables:
+                rendered_variables[var_name] = Template(str(variables[var_name]), self.hass).async_render()
+
             for component in page['components']:
 
                 if component['type'] == "text":
                     text_template = Template(str(component['content']), self.hass)
                     try:
-                        rendered_text = str(text_template.async_render())
+                        rendered_text = str(text_template.async_render(variables=rendered_variables))
                     except TemplateError as e:
                         _LOGGER.error("Template render error: %s", e)
                         rendered_text = "Template Error"
@@ -163,7 +168,7 @@ class Pixoo64(Entity):
                     elif component['font'] == "FIVE_PIX":
                         font = FIVE_PIX
 
-                    rendered_color = render_color(component['color'], self.hass)
+                    rendered_color = render_color(component['color'], self.hass, variables=rendered_variables)
 
                     pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font)
 
@@ -171,17 +176,17 @@ class Pixoo64(Entity):
                     try:
                         if "image_path" in component:
                             # File
-                            rendered_image_path = Template(str(component['image_path']), self.hass).async_render()
+                            rendered_image_path = Template(str(component['image_path']), self.hass).async_render(variables=rendered_variables)
                             img = Image.open(rendered_image_path)
                         elif "image_url" in component:
                             # URL/Web
-                            rendered_image_path = Template(str(component['image_url']), self.hass).async_render()
+                            rendered_image_path = Template(str(component['image_url']), self.hass).async_render(variables=rendered_variables)
                             response = requests.get(rendered_image_path, timeout=pixoo.timeout)
                             img = Image.open(BytesIO(response.content))
                         elif "image_data" in component:
                             # Base64
                             # Use a website like https://base64.guru/converter/encode/image to encode the image.
-                            rendered_image_data = Template(str(component['image_data']), self.hass).async_render()
+                            rendered_image_data = Template(str(component['image_data']), self.hass).async_render(variables=rendered_variables)
                             img = Image.open(BytesIO(base64.b64decode(rendered_image_data)))
                         else:
                             continue
@@ -190,7 +195,7 @@ class Pixoo64(Entity):
                         # (If too big, it's handled in the _pixoo class)
 
                         # You can "see" the difference here: https://i.stack.imgur.com/bKlzT.png
-                        rendered_resample_mode = str(Template(str(component.get('resample_mode', "box")), self.hass).async_render()).lower()
+                        rendered_resample_mode = str(Template(str(component.get('resample_mode', "box")), self.hass).async_render(variables=rendered_variables)).lower()
                         if rendered_resample_mode == "nearest" or rendered_resample_mode == "pixel_art":
                             resample_mode = Image.NEAREST
                         elif rendered_resample_mode == "bilinear":
@@ -222,12 +227,12 @@ class Pixoo64(Entity):
 
                 elif component['type'] == "rectangle":
                     try:
-                        rendered_color = render_color(component.get('color'), self.hass)
-                        position = ( int(Template(str(component['position'][0])).async_render()), int(Template(str(component['position'][1])).async_render()) )
-                        size = ( int(Template(str(component['size'][0])).async_render()), int(Template(str(component['size'][1])).async_render()) )
+                        rendered_color = render_color(component.get('color'), self.hass, variables=rendered_variables)
+                        position = ( int(Template(str(component['position'][0])).async_render()), int(Template(str(component['position'][1])).async_render(variables=rendered_variables)) )
+                        size = ( int(Template(str(component['size'][0])).async_render()), int(Template(str(component['size'][1])).async_render(variables=rendered_variables)) )
                         size = (size[0] - 1, size[1] - 1)
 
-                        rendered_fill = bool(Template(str(component.get('filled', True)), self.hass).async_render())
+                        rendered_fill = bool(Template(str(component.get('filled', True)), self.hass).async_render(variables=rendered_variables))
 
                         if rendered_fill:
                             pixoo.draw_filled_rectangle(position, (position[0] + size[0], position[1] + size[1]), rendered_color)

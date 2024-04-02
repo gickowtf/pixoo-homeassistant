@@ -168,9 +168,11 @@ def get_rgb(name: str) -> tuple[int, int, int]:
     return (r, g, b)
 
 
-def render_color(color: str | list | None, hass: HomeAssistant, default_color: tuple = get_rgb("white")) -> tuple[int, int, int]:
+def render_color(color: str | list | None, hass: HomeAssistant, default_color: tuple = get_rgb("white"), variables: dict = None) -> tuple[int, int, int]:
+    if variables is None:
+        variables = {}
     try:
-        rendered_color = Template(str(color), hass).async_render()
+        rendered_color = Template(str(color), hass).async_render(variables=variables)
         if isinstance(rendered_color, list):
             rendered_color = tuple(rendered_color)
         elif rendered_color in CSS4_COLORS:
