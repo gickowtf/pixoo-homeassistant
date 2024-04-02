@@ -1,4 +1,4 @@
-<img  src="https://github.com/gickowtf /pixoo-homeassistant/blob/main/images/logo.png?raw=true"  title="Example of configuration.yaml"  align="right"  height="90"  />
+<img  src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/logo.png?raw=true"  title="Example of configuration.yaml"  align="right"  height="90"  />
 
   
 
