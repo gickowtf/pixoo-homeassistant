@@ -20,15 +20,18 @@ Custom component for easy use of a Pixoo64 within Home Assistant. With this inte
 
 ## Installation
 
-1. Install this integration with HACS (adding repository required), or copy the contents of this
+1. Install this integration with HACS (adding repository required), or copy the contents of this repository's `custom_components/divoom_pixoo` directory into your `custom_components/divoom_pixoo` directory.
 
-repository into the `custom_components/divoom_pixoo` directory.
+    [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=gickowtf&repository=pixoo-homeassistant&category=integration)
 
 2. Restart Home Assistant.
 
-3. Go to Settings / Integrations and add integration "Divoom Pixoo 64"
+3. Go to Settings / Integrations and add integration "Divoom Pixoo 64".
 
-4. Please select a discovered Pixoo 64 device from the list or select 'Manual IP' to manually enter the device's IP.
+    [![Add Integration to your Home Assistant
+instance.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=divoom_pixoo)
+
+4. Please select a discovered Pixoo 64 device from the list or select 'Manual IP' to manually enter the device's IP yourself.
 
   
 
@@ -48,6 +51,8 @@ repository into the `custom_components/divoom_pixoo` directory.
 
 **Scan interval (in seconds):** The amount of time a page is displayed
 
+
+**List of pages in YAML:** See below (Optional)
   
 
 # Page Types & Configurations
@@ -57,8 +62,8 @@ repository into the `custom_components/divoom_pixoo` directory.
 Each page type will have configuration options unique to it. **All configs should be written using YAML**
 *If you're new to this integration, we recommend starting with the components page type.*
 
-In the YAML config, all pages are nested under `- page_type:`
-When setting the default configuration. Multiple pages can be set. These will be rotated through using the time set in "scan interval"
+In the YAML config, all pages are nested under `- page_type: XXX`
+When setting the default configuration. Multiple pages can be set. These will be rotated through using the "duration" tag, or by default the time set in "scan interval".
 
 **YAML Layout example**
 ```yaml
@@ -72,12 +77,25 @@ In addition, all page types can be dynamically set to Enable/Disable based on HA
 
 | **Config Options** | **required** | **Default** | **Values**                                                            | 
 |--------------------|:------------:|:-----------:|-----------------------------------------------------------------------|
-| enabled            |      F       |    true     | bool or {{ template }} *#expects  state = 'true', 'yes', 'on' or '1'* |
+| enabled            |      No      |    true     | bool or {{ template }} *#expects  state = 'true', 'yes', 'on' or '1'* |
 
 ```yaml
 - page_type: PAGE_TYPE
   enabled: "{{ states.input_boolean.YOURS.state }}"
 ```
+
+You can also set the duration of a page in seconds. This will override the scan interval set in the device settings.
+
+| **Config Options** | **required** |     **Default**     | **Values**                | 
+|--------------------|:------------:|:-------------------:|---------------------------|
+| duration           |      No      | (The Scan Interval) | integer/float in seconds  |
+
+```yaml
+- page_type: PAGE_TYPE
+  duration: 10
+```
+> *Note: The enabled tag and duration tag only apply when used in the configuration. Therefore, they won't word in the service.*
+
 ## Page: Components
 A components page  turns your Pixoo into your canvas!  You can tie multiple text/image configs to a single page.
 
@@ -108,10 +126,10 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
  
 | **Config Options** | **required** | **Default** | **Values**                                                              | 
 |--------------------|:------------:|-------------|-------------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
-| content            |      T       |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
-| font               |      F       | PICO_8      | [Fonts](#fonts)                                                         |
-| color              |      F       | white       | [R, G, B] or [Colors](#color-presets)                                   |
+| position           |     Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
+| content            |     Yes      |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
+| font               |      No      | PICO_8      | [Fonts](#fonts)                                                         |
+| color              |      No      | white       | [R, G, B] or [Colors](#color-presets)                                   |
 
   Example
 ```yaml
@@ -122,15 +140,15 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 
 #### Component: Image
 
-| **Config Options** | **required** | **Default** | **Values**                                                                                                                         | 
-|--------------------|:------------:|-------------|------------------------------------------------------------------------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel                                                                   |
-| image_path         | T (pick one) |             | image path like /config/img/haus.png                                                                                               |
-| image_url          | T (pick one) |             | image url like template {{ entity image }} or https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/pixoo.gif |
-| image_data         | T (pick one) |             | image data in base64 convert images [here](https://base64.guru/converter/encode/image)                                             |
-| height             |      F       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional    |
-| width              |      F       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional    |
-| resample_mode      |      F       | `box`       | `box`, `nearest`, `bilinear`, `hamming`, `bicubic`, `lanczos`                                                                      |
+| **Config Options** | **required**  | **Default** | **Values**                                                                                                                          | 
+|--------------------|:-------------:|-------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| position           |      Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel                                                                    |
+| image_path         | Yes(pick one) |             | image path like /config/img/haus.png                                                                                                |
+| image_url          | Yes(pick one) |             | image url like template {{ entity image }} or https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/fuel.png   |
+| image_data         | Yes(pick one) |             | image data in base64. Convert images [here](https://base64.guru/converter/encode/image).                                            |
+| height             |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
+| width              |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
+| resample_mode      |      No       | `box`       | `box`, `nearest`, `bilinear`, `hamming`, `bicubic`, `lanczos`                                                                       |
 
 Example
 ```yaml
@@ -144,12 +162,12 @@ Example
 
 #### Component: Rectangle
 
-| **Config Options** | **required** | **Default** | **Values**                                                       | 
-|--------------------|:------------:|-------------|------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel |
-| size               |      T       |             | start position + size start                                      |
-| color              |      T       |             | [Colors](#color-presets)                                         |
-| filled             |      F       |             | boolean                                                          |
+| **Config Options** | **required** | **Default** | **Values**                                                           | 
+|--------------------|:------------:|-------------|----------------------------------------------------------------------|
+| position           |     Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel     |
+| size               |     Yes      |             | final size of the rectangle. looks like [width, height]              |
+| color              |      No      |             | [R, G, B] or [Colors](#color-presets)                                |
+| filled             |      No      |             | boolean                                                              |
 
 Example
 ```yaml
@@ -160,24 +178,37 @@ Example
       filled: "{{ states.input_boolean.YOURS.state }}"  #optional
 ```
 
+#### Variables (Optional) (Only for the components page)
+If you wish for easier sharing of your custom component pages, you can define variables in the variables tag. These can then be used in any template.
+> *Note: The variables tag is not supported in the service call. For those, you have to use Home Assistant's variables feature (with automations/scripts)*
 
 
-## Page: text [NOT RECOMMENDED]
-*While you can use this page type, the components type is generally a better fit.*
-\- page_type: text
- 
-| **Config Options** | **required** | **Default** | **Values**                                                              | 
-|--------------------|:------------:|-------------|-------------------------------------------------------------------------|
-| position           |      T       |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel        |
-| content            |      T       |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
-| font               |      F       | PICO_8      | [Fonts](#fonts)                                                         |
-| color              |      F       | white       | [R, G, B] or [Colors](#color-presets)                                   |
-
+Example usage:
 ```yaml
-- page_type: text
-  position: [0,0] 
-  content: Welcome Home!
+- page_type: components
+  variables:
+    power: "{{ states('input_number.power') }}"
+    storage: "{{ states('input_number.storage') }}"
+  components:
+    - type: image
+      image_path: /config/custom_components/divoom_pixoo/img/sunpower.png
+      position: [2,1]
+    - type: text
+      content: "{{ power }}"
+      color: "{{ [255,175,0] if power|int >= 1 else [131,131,131] }}"
+      font: GICKO
+      position: [17,8]
+    - type: image
+      image_path: "{{ '/config/custom_components/divoom_pixoo/img/akku80-100.png' if storage|int >= 80 else '/config/custom_components/divoom_pixoo/img/akku60-80.png' if storage|int >= 60 else '/config/custom_components/divoom_pixoo/img/akku40-60.png' if storage|int >= 40 else '/config/custom_components/divoom_pixoo/img/akku20-40.png' if storage|int >= 20 else '/config/custom_components/divoom_pixoo/img/akku00-20.png'}}"
+      position: [2, 17]
+    - type: text
+      content: "{{ storage }}"
+      color: "{{ [255,0,68] if storage|int <= 0 else [4,204,2] }}"
+      font: GICKO
+      position: [17, 18]
 ```
+
+--------------
 
 ## Page: Channel
 *In Divoom app you can set three different custom channels which you can select here.*
@@ -191,7 +222,7 @@ Example
 
 | **Config Options** | **required** | **Default** | **Values** | 
 |--------------------|:------------:|-------------|------------|
-| id                 |      T       |             | Integer    |
+| id                 |     Yes      |             | Integer    |
 
 Example:
 ```yaml
@@ -199,25 +230,24 @@ Example:
   id: 0
 ```
 
+--------------
+
 
 ## Page: Clock
-*In Divoom app you can set three different custom channels which you can select here.*
+*In Divoom app, there's a big list of clocks that you can set to your device.*
 
   \- page_type: clock
 
 
 | **Config Options** | **required** | **Default** | **Values**                                                                                                 | 
 |--------------------|:------------:|-------------|------------------------------------------------------------------------------------------------------------|
-| id                 |      T       |             | Clock ID [list of clock ID's](https://github.com/gickowtf/pixoo-homeassistant/blob/main/READMES/CLOCKS.md) |
+| id                 |     Yes      |             | Clock ID [list of clock ID's](https://github.com/gickowtf/pixoo-homeassistant/blob/main/READMES/CLOCKS.md) |
 
 Example:
 ```yaml
 - page_type: clock
   id: 182
 ```
- 
- 
-
   
 ### Alternative Method to find ClockFace ID's
 
@@ -233,7 +263,7 @@ This adds the visualizer page to the integration.
 
 | **Config Options** | **required** | **Default** | **Values**              | 
 |--------------------|:------------:|-------------|-------------------------|
-| id                 |      T       |             | Clock (visualizer) ID   | 
+| id                 |     Yes      |             | Clock (visualizer) ID   | 
 
 <br>
 
@@ -252,7 +282,7 @@ Example:
 Photovoltaic - PV is a pre-designed page. The icon changes depending on the battery capacity and the font color changes from red to green
 *Helper entities may have to be used here*
 
-<img  src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/pixoo.gif?raw=true"  title="Example of configuration.yaml Solar"  align="left"  height="150"  width="150"  />
+<img  src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/solar.png?raw=true"  title="Example of configuration.yaml Solar"  align="left"  height="150"  width="150"  />
 
 ```yaml 
 - page_type: PV
@@ -265,7 +295,7 @@ Photovoltaic - PV is a pre-designed page. The icon changes depending on the batt
   time: "{{ now().strftime('%H:%M') }}"
 ```
 ## Page: Progress Bar
- *Special page with a progress bar for, for example, the status of the dishwasher or charging status of the car*
+ *Pre-designed page with a progress bar, for example, for the status of the dishwasher or for the charging status of the car*
  
  \- page_type: progress_bar
   
@@ -274,17 +304,17 @@ Photovoltaic - PV is a pre-designed page. The icon changes depending on the batt
 
 | **Config Options**  | **required** | **Default** | **Values**                                       | 
 |---------------------|:------------:|-------------|--------------------------------------------------|
-| header              |      T       |             | string or use {{ template }}  *e.g. Dishwasher*  |
-| progress            |      T       |             | integer or use {{ template }}                    |
-| footer              |      T       |             | string or use {{ template }}  *e.g. Date*        |
-| bg_color            |      F       | blue        | use "[R, G, B]" or [Colors](#color-presets)      |
-| header_offset       |      F       | 2           | integer                                          |
-| header_font_color   |      F       | white       | use "[R, G, B]" or [Colors](#color-presets)      |
-| progress_bar_color  |      F       | red         | use "[R, G, B]" or [Colors](#color-presets)      |
-| progress_text_color |      F       | white       | use "[R, G, B]" or [Colors](#color-presets)      |
-| time_color          |      F       | grey        | use "[R, G, B]" or [Colors](#color-presets)      |
-| footer_offset       |      F       | 2           | integer                                          |
-| footer_font_color   |      F       | white       | use "[R, G, B]" or [Colors](#color-presets)      |
+| header              |     Yes      |             | string or use {{ template }}  *e.g. Dishwasher*  |
+| progress            |     Yes      |             | integer or use {{ template }}                    |
+| footer              |     Yes      |             | string or use {{ template }}  *e.g. Date*        |
+| bg_color            |      No      | blue        | use "[R, G, B]" or [Colors](#color-presets)      |
+| header_offset       |      No      | 2           | integer                                          |
+| header_font_color   |      No      | white       | use "[R, G, B]" or [Colors](#color-presets)      |
+| progress_bar_color  |      No      | red         | use "[R, G, B]" or [Colors](#color-presets)      |
+| progress_text_color |      No      | white       | use "[R, G, B]" or [Colors](#color-presets)      |
+| time_color          |      No      | grey        | use "[R, G, B]" or [Colors](#color-presets)      |
+| footer_offset       |      No      | 2           | integer                                          |
+| footer_font_color   |      No      | white       | use "[R, G, B]" or [Colors](#color-presets)      |
 
 Example:
 
@@ -310,21 +340,21 @@ Example:
 
 | **Config Options** | **required** | **Default**          | **Values**                                                                   | 
 |--------------------|:------------:|----------------------|------------------------------------------------------------------------------|
-| title              |      T       |                      | string - can use {{ template }}  e.g. Gas Station Name                       |
-| name1              |      T       |                      | string - can use {{ template }} *e.g. fuel type*                             |   
-| price1             |      T       |                      | use {{ template }}   *e.g. fuel price*                                       |  
-| name2              |      T       |                      | string - can use {{ template }}                                              |   
-| price2             |      T       |                      | use {{ template }}                                                           |   
-| name3              |      T       |                      | string - can use {{ template }}                                              |       
-| price3             |      T       |                      | use {{ template }} eg. fuel price                                            |
-| status             |      T       |                      | string - can use {{ template }} Any extra field in my case an opening status |
+| title              |     Yes      |                      | string - can use {{ template }}  e.g. Gas Station Name                       |
+| name1              |     Yes      |                      | string - can use {{ template }} *e.g. fuel type*                             |   
+| price1             |     Yes      |                      | use {{ template }}   *e.g. fuel price*                                       |  
+| name2              |     Yes      |                      | string - can use {{ template }}                                              |   
+| price2             |     Yes      |                      | use {{ template }}                                                           |   
+| name3              |     Yes      |                      | string - can use {{ template }}                                              |       
+| price3             |     Yes      |                      | use {{ template }} eg. fuel price                                            |
+| status             |     Yes      |                      | string - can use {{ template }} Any extra field in my case an opening status |
 |                    |              |                      |                                                                              |
-| font_color         |      F       | white                | "[R, G, B]" or [Colors](#color-presets)                                      |       
-| bg_color           |      F       | yellow (255, 230, 0) | "[R, G, B]" or [Colors](#color-presets)                                      |              
-| price_color        |      F       | white                | "[R, G, B]" or [Colors](#color-presets)                                      |
-| title_color        |      F       | black                | "[R, G, B]" or [Colors](#color-presets)                                      |
-| stripe_color       |      F       | font_color           | "[R, G, B]" or [Colors](#color-presets)                                      |         
-| title_offset       |      F       | 2                    | integer *used to center the text*                                            |
+| font_color         |      No      | white                | "[R, G, B]" or [Colors](#color-presets)                                      |       
+| bg_color           |      No      | yellow (255, 230, 0) | "[R, G, B]" or [Colors](#color-presets)                                      |              
+| price_color        |      No      | white                | "[R, G, B]" or [Colors](#color-presets)                                      |
+| title_color        |      No      | black                | "[R, G, B]" or [Colors](#color-presets)                                      |
+| stripe_color       |      No      | font_color           | "[R, G, B]" or [Colors](#color-presets)                                      |         
+| title_offset       |      No      | 2                    | integer *used to center the text*                                            |
 
 Example of the image:
 
@@ -360,7 +390,8 @@ text 1
 ```
 
 *There is no limit to the maximum newlines except for 64 pixels ;)*
-  
+
+--------------
 
 # Services
 
@@ -443,16 +474,13 @@ Restart the Divoom Pixoo device. (It has a little bit of delay. Be patient.)
   
 --------------
 
-# Templates (entity states)
+# Templates
 
-As mentioned above, templates allow you to bring Entity states and attributes directly to your Pixoo! (eg. Temperature, brightness, presence, entity on/off). *For a deep dive see [HA config link]*
+As mentioned above, templates allow you to bring Entity states and attributes directly to your Pixoo! (eg. Temperature, brightness, presence, entity on/off). They can be used in most settings in the integration. *For a deep dive see [https://www.home-assistant.io/docs/configuration/templating/](https://www.home-assistant.io/docs/configuration/templating/) or even [https://jinja.palletsprojects.com/en/latest/templates/](https://jinja.palletsprojects.com/en/latest/templates/) (The language behind templates)*
 
+You can find the entity ID in HA under Developer > States (Although you shouldn't need this.)
   
-
-You can find the entity ID in HA under Developer > States
-
-  
-
+# Example usages of templates
 ## Report Raw Sensor Readings
 
   
@@ -466,15 +494,14 @@ Binary sensors are the easiest to start with, as they simply live in one of two 
       font: PICO_8
       position: [0,0]
       color: white
-      content: >-
-      Motion-FL1: {{ states('binary_sensor.MotionDetector' }}
+      content: "Motion-FL1: {{ states('binary_sensor.MotionDetector') }}"
 ```
 
   
 
 In the above example, the Pixoo would display
 
-"Motion-FL1: [on/off]
+Motion-FL1: [on/off]
 
   
 
@@ -521,8 +548,8 @@ color: >-
 ['on']) else [0,255,0] }}
 ```
 
-## Example: Animations through automations 
-Note: In this example we're using a count helper to act as a countdown
+## Animations through automations 
+Note: In this example we're using a count helper to act as a countdown. This also uses an automation and not the config.
 
 ```yaml
 alias: pixoo64 - auto-ani
@@ -601,15 +628,13 @@ mode: single
 |------------|--------------------------------------------|
 | gicko      | ![FONT_GICKO.png](images%2FFONT_GICKO.png) |
 | five_pix   | ![five_pix.png](images%2Ffive_pix.png)     |
-| PICO_8     | ![PICO_8.png](images%2FPICO_8.png)         |
+| pico_8     | ![PICO_8.png](images%2FPICO_8.png)         |
 | eleven_pix | ![eleven_pix.png](images%2Feleven_pix.png) |
 | clock      | ![CLOCK.png](images%2FCLOCK.png)           |
 
-  
 
 <br>
 
-  
 
 --------------
 
@@ -648,7 +673,7 @@ Sometimes the display crashes, especially with animated images. I have often rea
 
   
 
-I would be happy if you present your configuration.yaml in the Discussions area
+I would be happy if you present your own configuration/usages of the integration or ask questions in the discussions!
 
 https://github.com/gickowtf/pixoo-homeassistant/discussions
 
