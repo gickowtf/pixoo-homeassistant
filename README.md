@@ -597,11 +597,13 @@ mode: single
 
 ## Fonts
 
-| Font     | Image                                                                                                                                     |
-|----------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| GICKO    | <img  src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/FONT_GICKO.png?raw=true"  title="FONT_GICKO"  width="500"  /> |
-| FIVE_PIX | <img  src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/five_pix.png?raw=true"  title="five_pix"  width="500"  />     |
-| PICO_8   | <img  src="https://github.com/gickowtf/pixoo-homeassistant/blob/main/images/PICO_8.png?raw=true"  title="PICO_8"  width="500"  />         |
+| Font       | Image                                      |
+|------------|--------------------------------------------|
+| gicko      | ![FONT_GICKO.png](images%2FFONT_GICKO.png) |
+| five_pix   | ![five_pix.png](images%2Ffive_pix.png)     |
+| PICO_8     | ![PICO_8.png](images%2FPICO_8.png)         |
+| eleven_pix | ![eleven_pix.png](images%2Feleven_pix.png) |
+| clock      | ![CLOCK.png](images%2FCLOCK.png)           |
 
   
 
