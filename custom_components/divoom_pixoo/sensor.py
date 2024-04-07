@@ -231,9 +231,15 @@ class Pixoo64(Entity):
                 elif component['type'] == "rectangle":
                     try:
                         rendered_color = render_color(component.get('color'), self.hass, variables=rendered_variables)
-                        position = ( int(Template(str(component['position'][0])).async_render()), int(Template(str(component['position'][1])).async_render(variables=rendered_variables)) )
-                        size = ( int(Template(str(component['size'][0])).async_render()), int(Template(str(component['size'][1])).async_render(variables=rendered_variables)) )
-                        size = (size[0] - 1, size[1] - 1)
+
+                        position = [
+                            int(Template(str(position), self.hass).async_render(variables=rendered_variables)) for position in
+                            component['position']
+                        ]
+                        size = [
+                            int(Template(str(size), self.hass).async_render(variables=rendered_variables)) for size in
+                            component['size']
+                        ]
 
                         rendered_fill = bool(Template(str(component.get('filled', True)), self.hass).async_render(variables=rendered_variables))
 
