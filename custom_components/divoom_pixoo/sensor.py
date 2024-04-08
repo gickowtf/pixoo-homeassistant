@@ -241,6 +241,8 @@ class Pixoo64(Entity):
                             component['size']
                         ]
 
+                        size = (size[0] - 1, size[1] - 1)
+
                         rendered_fill = bool(Template(str(component.get('filled', True)), self.hass).async_render(variables=rendered_variables))
 
                         if rendered_fill:
