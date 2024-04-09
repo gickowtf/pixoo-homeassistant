@@ -130,7 +130,7 @@ class Pixoo64(Entity):
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
                 iteration_count += 1
 
-    def _render_page(self, page):
+    def _render_page(self, page: dict):
         pixoo = self._pixoo
         pixoo.clear()
 
@@ -150,7 +150,8 @@ class Pixoo64(Entity):
             for var_name in variables:
                 rendered_variables[var_name] = Template(str(variables[var_name]), self.hass).async_render()
 
-            for component in page['components']:
+            components: list = page['components'].copy()  # Copy the list so we can add new items to it.
+            for index, component in enumerate(components):
 
                 if component['type'] == "text":
                     try:
@@ -252,6 +253,14 @@ class Pixoo64(Entity):
                             pixoo.draw_line((position[0] + size[0], position[1]), (position[0] + size[0], position[1] + size[1]), rendered_color)
                             pixoo.draw_line((position[0] + size[0], position[1] + size[1]), (position[0], position[1] + size[1]), rendered_color)
                             pixoo.draw_line((position[0], position[1] + size[1]), position, rendered_color)
+
+                    except TemplateError as e:
+                        _LOGGER.error("Template render error: %s", e)
+                elif component["type"] == "templatable":
+                    try:
+                        rendered_list = list(Template(str(component.get("template", [])), self.hass).async_render(variables=rendered_variables))
+                        for item in rendered_list[::-1]:  # Reverse the list so that the order is correct.
+                            components.insert(index + 1, item)
 
                     except TemplateError as e:
                         _LOGGER.error("Template render error: %s", e)
