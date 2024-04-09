@@ -347,6 +347,16 @@ class Pixoo:
         if data['error_code'] != 0:
             self.__error(data)
 
+    def play_gif(self, gif_url):
+        response = requests.post(self.__url, json.dumps({
+            'Command': 'Device/PlayTFGif',
+            'FileType': 2,
+            'FileName': gif_url
+        }), timeout=self.timeout)
+        data = response.json()
+        if data['error_code'] != 0:
+            self.__error(data)
+
     def set_face(self, face_id):
         self.set_clock(face_id)
 
