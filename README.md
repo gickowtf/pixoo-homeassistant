@@ -94,7 +94,8 @@ You can also set the duration of a page in seconds. This will override the scan 
 - page_type: PAGE_TYPE
   duration: 10
 ```
-> *Note: The enabled tag and duration tag only apply when used in the configuration. Therefore, they won't word in the service.*
+> [!NOTE]
+> The enabled tag and duration tag only apply when used in the configuration. Therefore, they won't word in the service.
 
 ## Page: Components
 A components page  turns your Pixoo into your canvas!  You can tie multiple text/image configs to a single page.
@@ -112,7 +113,8 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
       #[rectangle config]
 ```
 <br>
-*Note: Position X,Y coordinates will need to be manually configured for each component type*
+> [!NOTE]
+> Position X,Y coordinates will need to be manually configured for each component type*
 
 #### XY Positioning
 
@@ -180,7 +182,8 @@ Example
 
 #### Variables (Optional) (Only for the components page)
 If you wish for easier sharing of your custom component pages, you can define variables in the variables tag. These can then be used in any template.
-> *Note: The variables tag is not supported in the service call. For those, you have to use Home Assistant's variables feature (with automations/scripts)*
+> [!NOTE]
+> The variables tag is not supported in the service call. For those, you have to use Home Assistant's variables feature (with automations/scripts)*
 
 
 Example usage:
@@ -212,8 +215,8 @@ Example usage:
 
 ## Page: Channel
 *In Divoom app you can set three different custom channels which you can select here.*
-*Note: The Divoom custom channel pic cycle rate must be set in the app itself*
-  \- page_type: channel
+> [!NOTE]
+> The Divoom custom channel pic cycle rate must be set in the app itself.
 
  - Channel 1 = `id: 0`
  - Channel 2 = `id: 1`
@@ -406,7 +409,8 @@ You can use it for Push Notifications. Trigger with anything! Call it with the S
 
 You can input in the _Page Data_ field the data of **one** page in the normal YAML format. It can be anything! 
 
-*Note: This is intended to be a temporary override of your default configuration. Any Enable/disable lines will not be respected here.*
+> [!NOTE]
+> This is intended to be a temporary override of your default configuration. Any Enable/disable lines will not be respected here.*
 
   
 
@@ -548,7 +552,8 @@ color: >-
 ```
 
 ## Animations through automations 
-Note: In this example we're using a count helper to act as a countdown. This also uses an automation and not the config.
+> [!NOTE]
+> In this example we're using a count helper to act as a countdown. This also uses an automation and not the config.
 
 ```yaml
 alias: pixoo64 - auto-ani
