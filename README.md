@@ -113,6 +113,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
       #[rectangle config]
 ```
 <br>
+
 > [!NOTE]
 > Position X,Y coordinates will need to be manually configured for each component type
 
@@ -182,6 +183,7 @@ Example
 
 #### Variables (Optional) (Only for the components page)
 If you wish for easier sharing of your custom component pages, you can define variables in the variables tag. These can then be used in any template.
+
 > [!NOTE]
 > The variables tag is not supported in the service call. For those, you have to use Home Assistant's variables feature (with automations/scripts)
 
@@ -215,6 +217,7 @@ Example usage:
 
 ## Page: Channel
 *In Divoom app you can set three different custom channels which you can select here.*
+
 > [!NOTE]
 > The Divoom custom channel pic cycle rate must be set in the app itself.
 
@@ -552,6 +555,7 @@ color: >-
 ```
 
 ## Animations through automations 
+
 > [!NOTE]
 > In this example we're using a count helper to act as a countdown. This also uses an automation and not the config.
 
