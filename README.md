@@ -114,7 +114,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 ```
 <br>
 > [!NOTE]
-> Position X,Y coordinates will need to be manually configured for each component type*
+> Position X,Y coordinates will need to be manually configured for each component type
 
 #### XY Positioning
 
@@ -183,7 +183,7 @@ Example
 #### Variables (Optional) (Only for the components page)
 If you wish for easier sharing of your custom component pages, you can define variables in the variables tag. These can then be used in any template.
 > [!NOTE]
-> The variables tag is not supported in the service call. For those, you have to use Home Assistant's variables feature (with automations/scripts)*
+> The variables tag is not supported in the service call. For those, you have to use Home Assistant's variables feature (with automations/scripts)
 
 
 Example usage:
@@ -410,7 +410,7 @@ You can use it for Push Notifications. Trigger with anything! Call it with the S
 You can input in the _Page Data_ field the data of **one** page in the normal YAML format. It can be anything! 
 
 > [!NOTE]
-> This is intended to be a temporary override of your default configuration. Any Enable/disable lines will not be respected here.*
+> This is intended to be a temporary override of your default configuration. Any Enable/disable lines will not be respected here.
 
   
 
