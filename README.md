@@ -111,6 +111,8 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
       #[image config]
     - type: rectangle
       #[rectangle config]
+    - type: templatable
+      #[templatable config]
 ```
 <br>
 
@@ -181,6 +183,46 @@ Example
       filled: "{{ states.input_boolean.YOURS.state }}"  #optional
 ```
 
+#### Component: Templatable
+
+| **Config Options** | **required** | **Default** | **Values**      | 
+|--------------------|:------------:|-------------|-----------------|
+| template           |     Yes      |             | jinja2 template |
+
+Example
+```yaml
+    - type: templatable
+      template: >-
+        {% set entities = [["input_boolean.sw1", "input_boolean.sw2"],
+        ["input_boolean.sw2"]] %} {% set origin = [1, 62] %}
+
+        {% set output = namespace(list=[], position_x = origin[0], position_y =
+        origin[1]) %} {% for entity_group in entities -%} {# {%- if loop.first
+        %}The {% elif loop.last %} and the {% else %}, the {% endif -%} #}
+
+        {% for entity in entity_group -%} {# {%- if loop.first %}The {% elif
+        loop.last %} and the {% else %}, the {% endif -%} #} {% set entity_state
+        = states(entity) %}
+
+        {## Select the color ##} {% if entity_state=="off" or
+        entity_state=="not_home" or entity_state == "standby" %} {% set
+        color="red" %} {% elif entity_state=="on" or entity_state=="home" %} {%
+        set color="green" %} {% elif entity_state=="playing" or
+        entity_state=="idle" or entity_state=="paused" %} {% set color="blue" %}
+        {% else %} {% set color="white" %} {% endif %}
+
+        {% set component = {"type": "rectangle", "size": [1,1], "color": color,
+        "position": [output.position_x, output.position_y]}%}
+
+        {## Make next pixel 2px higher ##} {% set output.position_y =
+        output.position_y - 2 %} {## Add to the output list##} {% set
+        output.list = output.list + [component] %}
+
+        {%- endfor %} {## Make next pixel 2px to the right ##} {% set
+        output.position_x = output.position_x + 2 %} {## reset y ##} {% set
+        output.position_y = origin[1] %} {%- endfor %} {{output.list}}
+```
+
 #### Variables (Optional) (Only for the components page)
 If you wish for easier sharing of your custom component pages, you can define variables in the variables tag. These can then be used in any template.
 
@@ -211,6 +253,27 @@ Example usage:
       color: "{{ [255,0,68] if storage|int <= 0 else [4,204,2] }}"
       font: gicko
       position: [17, 18]
+```
+
+--------------
+
+
+## Page: gif
+*Animated GIFs*
+
+1. Download the gif on your computer.
+2. Resize your gif to 16x16, 32x32 or 64x64. I know some websites say it's 64x64, but it has to actually be 64x64. You can resize gifs on multiple websites. Here's an example. (You only have to select manually the width and height of the size down the page).
+3. Re-download the gif.
+4. Re-upload the gif. You can use many image services like this one. (Make sure you use the gif file's link, and not the "gif viewing page". You can get that by right-clicking the gif on the website, and then clicking "Copy Image Link". The link in your clipboard probably now ends in .gif, like your file. (Although this might not be 100% the case.))
+
+| **Config Options** | **required** | **Default** | **Values** | 
+|--------------------|:------------:|-------------|------------|
+| gif_url            |     Yes      |             | URL        |
+
+Example:
+```yaml
+- page_type: gif
+  gif_url: https://i.ibb.co/tKnvLs2/ezgif-5-30ff95e9ca.gif
 ```
 
 --------------

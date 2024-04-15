@@ -5,6 +5,7 @@ In diesem Teil werde ich etwas weiter ausholen aber ich denke wenn dies verstand
 Für das Beispiel habe ich ein extra sensor `sensor.example` erstellt.
 ![devtools.jpg](images%2Fdevtools.jpg)
 
+> [!INFO]
 > Der Sensor hat den `State` 1337 diesen kann man mit der Jinja template Engine wie folgt ansprechen:
 <br>`{{ states("sensor.example") }}` was die folgende ausgabe: `1337` ergibt.
 
