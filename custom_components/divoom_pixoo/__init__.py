@@ -2,6 +2,9 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 import logging
+
+from homeassistant.exceptions import ConfigEntryNotReady
+
 from .const import CURRENT_ENTRY_VERSION, DOMAIN, VERSION
 from .pixoo64 import Pixoo
 
@@ -20,11 +23,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         pix = await hass.async_add_executor_job(load_pixoo, entry.options.get('ip_address'))
     except Exception as e:
         _LOGGER.error("Error setting up Pixoo: %s", e)
-        return False
+        raise ConfigEntryNotReady  # Raising not ready instead of false will make HA try again later
 
     hass.data[DOMAIN][entry.entry_id] = {}
     hass.data[DOMAIN][entry.entry_id]['pixoo'] = pix
     hass.data[DOMAIN][entry.entry_id]['entry_data'] = entry.options
+    hass.data[DOMAIN][entry.entry_id]['available'] = True
 
     await hass.config_entries.async_forward_entry_setups(entry, ["light", "sensor"])
     hass.data[DOMAIN][entry.entry_id]['update_listener'] = entry.add_update_listener(async_update_entry)
