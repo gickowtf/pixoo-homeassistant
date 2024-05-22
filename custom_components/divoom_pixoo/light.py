@@ -52,9 +52,17 @@ class DivoomLight(LightEntity):
         self._pixoo.set_screen(False)
 
     def update(self) -> None:
-        self._state = self._pixoo.get_state()
-        brightness_percent = self._pixoo.get_brightness()
-        self._brightness = int((brightness_percent / 100.0) * 255)
+        try:
+            self._state = self._pixoo.get_state()
+            brightness_percent = self._pixoo.get_brightness()
+            self._brightness = int((brightness_percent / 100.0) * 255)
+            self.hass.data[DOMAIN][self._config_entry.entry_id]['available'] = True
+        except:
+            self.hass.data[DOMAIN][self._config_entry.entry_id]['available'] = False
+
+    @property
+    def available(self) -> bool | None:
+        return self.hass.data[DOMAIN][self._config_entry.entry_id]['available']
 
     @property
     def supported_color_modes(self) -> set[ColorMode] | set[str] | None:

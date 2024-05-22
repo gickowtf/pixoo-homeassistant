@@ -99,6 +99,11 @@ class Pixoo64(Entity):
         self._update_task = self._config_entry.async_create_background_task(self.hass, task(), "pixoo-next-page-timer")
 
     async def _async_next_page(self):
+        if self.hass.data[DOMAIN][self._config_entry.entry_id]['available'] is False:
+            _LOGGER.debug("Device is not available. Not updating.")
+            self.schedule_update_ha_state()  # Force update the unavailable state of the entity.
+            await self.async_schedule_next_page(self._scan_interval.total_seconds())
+            return
         _LOGGER.debug("Loading next page for %s", self._pixoo.address)
 
         if len(self._pages) == 0:
@@ -123,9 +128,12 @@ class Pixoo64(Entity):
 
             if is_enabled:
                 duration = float(self.page.get('duration', self._scan_interval.total_seconds()))
-                self.schedule_update_ha_state()
-                await self.hass.async_add_executor_job(self._render_page, self.page)
                 await self.async_schedule_next_page(duration)
+                self.schedule_update_ha_state()
+                try:
+                    await self.hass.async_add_executor_job(self._render_page, self.page)
+                except:
+                    _LOGGER.error("Error rendering page for %s. Is the device connected to the network?", self._pixoo.address)
             else:
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
                 iteration_count += 1
@@ -311,6 +319,9 @@ class Pixoo64(Entity):
     def entity_category(self):
         return EntityCategory.DIAGNOSTIC
 
+    @property
+    def available(self) -> bool | None:
+        return self.hass.data[DOMAIN][self._config_entry.entry_id]['available']
 
     @property
     def device_info(self) -> DeviceInfo:
