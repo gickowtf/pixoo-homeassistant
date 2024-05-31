@@ -36,7 +36,7 @@ class Pixoo64(Entity):
         # self._ip_address = ip_address
         self._pixoo = pixoo
         self._config_entry = config_entry
-        self._pages = self._config_entry.options.get('pages_data', "")
+        self._pages = self._config_entry.options.get('pages_data', [])
         self._scan_interval = timedelta(seconds=int(self._config_entry.options.get('scan_interval', timedelta(seconds=15))))
         self._current_page_index = -1  # Start at -1 so that the first page is 0.
         self._attr_has_entity_name = True
@@ -76,6 +76,15 @@ class Pixoo64(Entity):
             self.restart_device,
             schema=vol.Schema({}, extra=vol.ALLOW_EXTRA)
         )
+
+        # Register the update page service
+        self.hass.services.async_register(
+            DOMAIN,
+            'update_page',
+            self.update_page,
+            schema=vol.Schema({}, extra=vol.ALLOW_EXTRA)
+        )
+
         # Continue with the setup
         if DOMAIN in self.hass.data:
             self.hass.data[DOMAIN].setdefault('entities', []).append(self)
@@ -302,6 +311,12 @@ class Pixoo64(Entity):
             self._pixoo.restart_device()
 
         await self.hass.async_add_executor_job(restart)
+
+    async def update_page(self, call):
+        def update_current_page():
+            self._render_page(self.page)
+
+        await self.hass.async_add_executor_job(update_current_page)
 
     @property
     def state(self):
