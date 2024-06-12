@@ -75,3 +75,10 @@ restart:
     entity:
       domain: sensor
       integration: divoom_pixoo
+update_page:
+  name: Update and send the current page to Divoom Pixoo
+  description: Re-renders and re-sends the current configured page to the Divoom Pixoo. *Warning, spamming this a ton 'could' cause the device to crash.*
+  target:
+    entity:
+      domain: sensor
+      integration: divoom_pixoo
