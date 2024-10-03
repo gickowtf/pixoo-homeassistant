@@ -87,12 +87,12 @@ class Pixoo64(Entity):
 
         # Continue with the setup
         if DOMAIN in self.hass.data:
-            self.hass.data[DOMAIN].setdefault('entities', []).append(self)
+            self.hass.data[DOMAIN].setdefault(self._config_entry.entry_id, {})['sensor'] =  self
         await self._async_next_page()
 
     async def async_will_remove_from_hass(self):
         """When entity is being removed from hass."""
-        pass
+        self.cancel_update_task()
 
     async def async_schedule_next_page(self, wait_time: float):
         _LOGGER.debug("Scheduling next page in %s seconds for %s", wait_time, self._pixoo.address)
@@ -104,7 +104,7 @@ class Pixoo64(Entity):
             except asyncio.CancelledError:
                 _LOGGER.debug('Next page timer cancelled for %s', self._pixoo.address)
         # Using HA's async_create_task instead of asyncio.create_task because it's better for HA.
-        # (Also, from the docs, it automatically cancels the task when the entry is unloaded.)
+        # (canceled in the async_will_remove_from_hass method of this file)
         self._update_task = self._config_entry.async_create_background_task(self.hass, task(), "pixoo-next-page-timer")
 
     async def _async_next_page(self):
@@ -300,7 +300,7 @@ class Pixoo64(Entity):
 
         await self.hass.async_add_executor_job(draw)
         if self._update_task:
-            self._update_task.cancel()
+            self.cancel_update_task()
             await self.async_schedule_next_page(duration.total_seconds())
 
     # Service to play the buzzer
@@ -325,6 +325,11 @@ class Pixoo64(Entity):
             self._render_page(self.page)
 
         await self.hass.async_add_executor_job(update_current_page)
+
+    def cancel_update_task(self):
+        if self._update_task:
+            self._update_task.cancel()
+            _LOGGER.debug("Successfully canceled update task for %s", self._pixoo.address)
 
     @property
     def state(self):
