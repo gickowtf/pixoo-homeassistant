@@ -6,7 +6,7 @@
 
   
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 [![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/gickowtf)
 ![python badge](https://img.shields.io/badge/Made%20with-Python-orange)
 ![last commit](https://img.shields.io/github/last-commit/gickowtf/pixoo-homeassistant?color=red)
@@ -20,7 +20,9 @@ Custom component for easy use of a Pixoo64 within Home Assistant. With this inte
 
 ## Installation
 
-1. Install this integration with HACS (adding repository required), or copy the contents of this repository's `custom_components/divoom_pixoo` directory into your `custom_components/divoom_pixoo` directory.
+Divoom Pixoo 64 Home Assistant Integration can be installed via HACS, or by manually copying the divoom_pixoo directory to Home Assistant's config/custom_components/ directory.
+
+1. Install this integration with HACS or copy the contents of this repository's `custom_components/divoom_pixoo` directory into your `custom_components/divoom_pixoo` directory.
 
     [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=gickowtf&repository=pixoo-homeassistant&category=integration)
 
