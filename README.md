@@ -137,6 +137,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 | content            |     Yes      |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
 | font               |      No      | pico_8      | [Fonts](#fonts)                                                         |
 | color              |      No      | white       | [R, G, B] or [Colors](#color-presets)                                   |
+| align              |      No      | left        | left, right or center (currently only for single line text)             |
 
   Example
 ```yaml
