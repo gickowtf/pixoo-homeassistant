@@ -93,7 +93,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
                     new_page["components"].append(
                         {"type": "text", "content": text.get("text", ""), "position": text.get("position", [0, 0]),
-                         "font": new_font, "color": text.get("font_color", [255, 255, 255])})
+                         "font": new_font, "color": text.get("font_color", [255, 255, 255]), "align": text.get("align", "")})
                 for image in old_page.get("images", []):
                     new_page["components"].append({"type": "image", "image_path": image.get("image", ""),
                                                    "position": image.get("position", [0, 0])})

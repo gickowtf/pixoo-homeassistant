@@ -193,7 +193,9 @@ class Pixoo64(Entity):
 
                     rendered_color = render_color(component.get('color'), self.hass, variables=rendered_variables)
 
-                    pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font)
+                    align = component.get('align', "").lower()
+
+                    pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font, align)
 
                 elif component['type'] == "image":
                     try:

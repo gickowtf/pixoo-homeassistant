@@ -7,7 +7,7 @@ import requests
 from PIL import Image, ImageOps
 
 from ._colors import get_rgb
-from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK
+from ._font import retrieve_glyph, retrieve_glyph_width, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK
 
 import logging
 _LOGGER = logging.getLogger(__name__)
@@ -243,11 +243,17 @@ class Pixoo:
                     local_y = int(index / x_size)
                     self.draw_pixel((xy[0] + local_x, xy[1] + local_y), rgb)
 
-    def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None):
+    def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None, align="left"):
         if font is None:
             font = FONT_PICO_8
 
-        x_offset, y_offset = 0, 0
+        x_offset = 0
+        if align == "center":
+            x_offset = int(self.get_text_width(text, font) / 2) * -1
+        elif align == "right":
+            x_offset = self.get_text_width(text, font) * -1
+
+        y_offset = 0
         for index, character in enumerate(text):
             if character == "\n":
                 # Since for now every character is at least smaller than the '0', this works.
@@ -263,6 +269,16 @@ class Pixoo:
 
             self.draw_character(character, (x_offset + xy[0], y_offset + xy[1]), rgb, font)
             x_offset += retrieve_glyph(character, font)[-1] + 1
+    
+    def get_text_width(self, text, font=None):
+        if font is None:
+            font = FONT_PICO_8
+
+        length = 0
+        for index, character in enumerate(text):
+            length += retrieve_glyph_width(character, font) + 1
+
+        return length - 1
 
     def draw_text_at_location_rgb(self, text, x, y, r, g, b):
         self.draw_text(text, (x, y), (r, g, b))
