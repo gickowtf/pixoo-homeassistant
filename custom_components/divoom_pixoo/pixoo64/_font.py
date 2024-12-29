@@ -257,9 +257,14 @@ def retrieve_glyph(character, font):
 
     return None
 
+def retrieve_glyph_width(character, font):
+    if character in font:
+        return font[character][-1]
+
+    return 0
 
 def supported_characters():
     return FONT_PICO_8.keys()
 
 
-__all__ = (retrieve_glyph, supported_characters, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)
+__all__ = (retrieve_glyph, retrieve_glyph_width, supported_characters, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX)

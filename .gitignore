@@ -126,3 +126,5 @@ dmypy.json
 .idea/
 
 playground.py
+
+.DS_Store
