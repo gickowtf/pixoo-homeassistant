@@ -1,0 +1,52 @@
+{
+    "title": "Divoom Pixoo 64",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Dispositivos detectados automaticamente",
+                "description": "Por favor, selecione um dispositivo Pixoo 64 detetado na lista ou selecione 'IP Manual' para introduzir manualmente o IP do dispositivo.",
+                "data": {
+                    "selector": "Selecione o dispositivo para configurar"
+                }
+            },
+            "config": {
+                "title": "Configure o seu novo dispositivo Pixoo",
+                "description": "Por favor, introduza o endereço IP do seu dispositivo Pixoo.",
+                "data": {
+                    "ip_address": "Endereço IP do dispositivo",
+                    "scan_interval": "Intervalo de verificação (em segundos)",
+                    "pages_data": "Lista de páginas em JSON"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "Um dispositivo com esse ID já foi adicionado.",
+            "not_supported": "Lamentamos, mas este dispositivo não é suportado."
+        },
+        "error": {
+            "connection": "Não foi possível ligar ao seu dispositivo com esses detalhes (IP). Pode ser um problema intermitente ou os detalhes podem estar incorretos.",
+            "already_configured": "Outro dispositivo com este endereço IP já foi adicionado."
+        }
+    },
+    "options": {
+        "step": {
+            "config": {
+                "title": "Configure o seu dispositivo Pixoo",
+                "description": "Atualize o seu dispositivo Pixoo existente",
+                "data": {
+                    "ip_address": "Endereço IP do dispositivo",
+                    "scan_interval": "Intervalo de verificação (em segundos)",
+                    "pages_data": "Lista de páginas em YAML"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "Um dispositivo com esse ID já foi adicionado.",
+            "not_supported": "Lamentamos, mas este dispositivo não é suportado."
+        },
+        "error": {
+            "connection": "Não foi possível ligar ao seu dispositivo com esses detalhes (IP). Pode ser um problema intermitente ou os detalhes podem estar incorretos.",
+            "already_configured": "Outro dispositivo com este endereço IP já foi adicionado."
+        }
+    }
+}
