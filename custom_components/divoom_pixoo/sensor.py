@@ -133,7 +133,12 @@ class Pixoo64(Entity):
                 is_enabled = False
 
             if is_enabled:
-                duration = float(self.page.get('duration', self._scan_interval.total_seconds()))
+                try:
+                    duration = int(str(Template(str(self.page.get('duration', self._scan_interval.total_seconds())), self.hass).async_render()))
+                except TemplateError as e:
+                    _LOGGER.error("Template render error: %s", e)
+                    duration = self._scan_interval.total_seconds()
+
                 await self.async_schedule_next_page(duration)
                 self.schedule_update_ha_state()
                 try:
