@@ -9,8 +9,8 @@ import requests
 import voluptuous as vol
 from PIL import Image
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_platform, config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.template import Template, TemplateError
@@ -46,43 +46,40 @@ class Pixoo64(Entity):
         self._update_task: None | Task = None
 
     async def async_added_to_hass(self):
+        platform = entity_platform.async_get_current_platform()
         # Register the buzz service
-        self.hass.services.async_register(
-            DOMAIN,
+        platform.async_register_entity_service(
             'play_buzzer',
-            self.async_play_buzzer,
-            schema=vol.Schema({
-                vol.Optional('buzz_cycle_time_millis'): int,
-                vol.Optional('idle_cycle_time_millis'): int,
-                vol.Optional('total_time'): int
-            }, extra=vol.ALLOW_EXTRA)
+            {
+                vol.Optional('buzz_cycle_time_millis'): cv.positive_int,
+                vol.Optional('idle_cycle_time_millis'): cv.positive_int,
+                vol.Optional('total_time'): cv.positive_int
+            },
+            "async_play_buzzer"
         )
 
         # Register the page service
-        self.hass.services.async_register(
-            DOMAIN,
-            'show_message',
-            self.async_show_message,
-            schema=vol.Schema({
+        platform.async_register_entity_service(
+            "show_message",
+            {
                 vol.Required('page_data'): dict,
-                vol.Optional('duration'): int,
-            }, extra=vol.ALLOW_EXTRA)
+                vol.Optional('duration'): cv.positive_int,
+            },
+            "async_show_message"
         )
 
         # Register the restart service
-        self.hass.services.async_register(
-            DOMAIN,
+        platform.async_register_entity_service(
             'restart',
-            self.restart_device,
-            schema=vol.Schema({}, extra=vol.ALLOW_EXTRA)
+            {},
+            "restart_device"
         )
 
-        # Register the update page service
-        self.hass.services.async_register(
-            DOMAIN,
+        # # Register the update page service
+        platform.async_register_entity_service(
             'update_page',
-            self.update_page,
-            schema=vol.Schema({}, extra=vol.ALLOW_EXTRA)
+            {},
+            "update_page"
         )
 
         # Continue with the setup
@@ -289,9 +286,8 @@ class Pixoo64(Entity):
             pixoo.push()
 
     # Service to show a message.
-    async def async_show_message(self, call):
-        page_data = call.data.get('page_data')
-        duration = timedelta(seconds=call.data.get('duration', self._scan_interval.seconds))
+    async def async_show_message(self, page_data: dict, duration: int = -1):
+        duration = timedelta(seconds=duration if duration >= 0 else self._scan_interval.total_seconds())
 
         if not page_data or not page_data.get('page_type'):
             _LOGGER.error("No page to render.")
@@ -306,23 +302,19 @@ class Pixoo64(Entity):
             await self.async_schedule_next_page(duration.total_seconds())
 
     # Service to play the buzzer
-    async def async_play_buzzer(self, call):
-        buzz_cycle_time = timedelta(milliseconds=call.data.get('buzz_cycle_time_millis', 500))
-        idle_cycle_time = timedelta(milliseconds=call.data.get('idle_cycle_time_millis', 500))
-        total_time = timedelta(milliseconds=call.data.get('total_time', 3000))
-
+    async def async_play_buzzer(self, buzz_cycle_time_millis: int = 500, idle_cycle_time_millis: int = 500, total_time: int = 3000):
         def buzz():
-            self._pixoo.play_buzzer(buzz_cycle_time, idle_cycle_time, total_time)
+            self._pixoo.play_buzzer(timedelta(buzz_cycle_time_millis), timedelta(idle_cycle_time_millis), timedelta(total_time))
 
         await self.hass.async_add_executor_job(buzz)
 
-    async def restart_device(self, call):
+    async def restart_device(self):
         def restart():
             self._pixoo.restart_device()
 
         await self.hass.async_add_executor_job(restart)
 
-    async def update_page(self, call):
+    async def update_page(self):
         def update_current_page():
             self._render_page(self.page)
 
@@ -336,10 +328,6 @@ class Pixoo64(Entity):
     @property
     def state(self):
         return self._current_page_index+1
-
-    @property
-    def entity_category(self):
-        return EntityCategory.DIAGNOSTIC
 
     @property
     def available(self) -> bool | None:
