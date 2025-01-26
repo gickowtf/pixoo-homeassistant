@@ -107,7 +107,7 @@ class Pixoo64(Entity):
     async def _async_next_page(self):
         if self.hass.data[DOMAIN][self._config_entry.entry_id]['available'] is False:
             _LOGGER.debug("Device is not available. Not updating.")
-            self.schedule_update_ha_state()  # Force update the unavailable state of the entity.
+            self.schedule_update_ha_state()
             await self.async_schedule_next_page(self._scan_interval.total_seconds())
             return
         _LOGGER.debug("Loading next page for %s", self._pixoo.address)
@@ -117,7 +117,7 @@ class Pixoo64(Entity):
 
         is_enabled = None
         iteration_count = 0
-        self._current_page_index = (self._current_page_index + 1) % len(self._pages)  # Increment the page index, duh.
+        self._current_page_index = (self._current_page_index + 1) % len(self._pages)
         while not is_enabled:
             if iteration_count >= len(self._pages):
                 _LOGGER.info("All pages disabled. Not updating.")
@@ -133,7 +133,12 @@ class Pixoo64(Entity):
                 is_enabled = False
 
             if is_enabled:
-                duration = float(self.page.get('duration', self._scan_interval.total_seconds()))
+                try:
+                    duration = int(Template(str(self.page.get('duration', self._scan_interval.total_seconds())), self.hass).async_render())
+                except TemplateError as e:
+                    _LOGGER.error("Template render error: %s", e)
+                    duration = self._scan_interval.total_seconds()
+
                 await self.async_schedule_next_page(duration)
                 self.schedule_update_ha_state()
                 try:

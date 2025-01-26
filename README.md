@@ -88,9 +88,9 @@ In addition, all page types can be dynamically set to Enable/Disable based on HA
 
 You can also set the duration of a page in seconds. This will override the scan interval set in the device settings.
 
-| **Config Options** | **required** |     **Default**     | **Values**                | 
-|--------------------|:------------:|:-------------------:|---------------------------|
-| duration           |      No      | (The Scan Interval) | integer/float in seconds  |
+| **Config Options** | **required** |     **Default**     | **Values**                                 | 
+|--------------------|:------------:|:-------------------:|--------------------------------------------|
+| duration           |      No      | (The Scan Interval) | integer/float in seconds or {{ template }} |
 
 ```yaml
 - page_type: PAGE_TYPE
@@ -782,4 +782,4 @@ Use this integration at your own risk.
 
 ## ❤️ Many thanks to
 
-@Mrredstone5230 - Thanks for the conversion to config flow and many many more
+[@SB2DD](https://github.com/SB2DD) - Thanks for the conversion to config flow and many many more
