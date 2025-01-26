@@ -134,7 +134,7 @@ class Pixoo64(Entity):
 
             if is_enabled:
                 try:
-                    duration = int(str(Template(str(self.page.get('duration', self._scan_interval.total_seconds())), self.hass).async_render()))
+                    duration = int(Template(str(self.page.get('duration', self._scan_interval.total_seconds())), self.hass).async_render())
                 except TemplateError as e:
                     _LOGGER.error("Template render error: %s", e)
                     duration = self._scan_interval.total_seconds()
