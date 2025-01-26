@@ -86,7 +86,7 @@ In addition, all page types can be dynamically set to Enable/Disable based on HA
   enabled: "{{ states.input_boolean.YOURS.state }}"
 ```
 
-You can also set the duration of a page in seconds. This will override the scan interval set in the device settings.
+You can also set the duration of a page in seconds. This will override the scan interval set in the device settings. Note that the duration is calculated via the template only when the page is displayed.
 
 | **Config Options** | **required** |     **Default**     | **Values**                                 | 
 |--------------------|:------------:|:-------------------:|--------------------------------------------|
