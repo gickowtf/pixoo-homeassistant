@@ -304,7 +304,7 @@ class Pixoo64(Entity):
     # Service to play the buzzer
     async def async_play_buzzer(self, buzz_cycle_time_millis: int = 500, idle_cycle_time_millis: int = 500, total_time: int = 3000):
         def buzz():
-            self._pixoo.play_buzzer(timedelta(buzz_cycle_time_millis), timedelta(idle_cycle_time_millis), timedelta(total_time))
+            self._pixoo.play_buzzer(timedelta(milliseconds=buzz_cycle_time_millis), timedelta(milliseconds=idle_cycle_time_millis), timedelta(milliseconds=total_time))
 
         await self.hass.async_add_executor_job(buzz)
 
