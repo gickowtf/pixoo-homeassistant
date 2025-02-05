@@ -782,5 +782,5 @@ Use this integration at your own risk.
 
 ## ❤️ Many thanks to
 
-[@SB2DD](https://github.com/SB2DD) - Thanks for the conversion to config flow and many many more
+[@SB2DD](https://github.com/SB2DD) - Thanks for the conversion to config flow and many many more<br>
 [SmartHome yourself](https://www.youtube.com/watch?v=lHtrDga7piI) - A German YouTuber who has created a video about this integration
