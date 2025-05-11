@@ -144,8 +144,7 @@ class Pixoo:
                     f'[.] Resized image to fit on screen (saving aspect ratio): "{image_path_or_object}" ({width}, {height}) '
                     f'-> ({image.size[0]}, {image.size[1]})')
 
-        # Convert the loaded image to RGB and RGBA
-        rgb_image = image.convert('RGB')
+        # Convert the loaded image to RGBA
         rgba_image = image.convert('RGBA')
 
         # Iterate over all pixels in the image that are left and buffer them
@@ -162,7 +161,7 @@ class Pixoo:
 
                 if rgba_image.getpixel(location)[3] != 0:  # If the pixel is transparent, it won't be drawn.
                     self.draw_pixel((placed_x, placed_y),
-                                    rgb_image.getpixel(location))
+                                    rgba_image.getpixel(location))
 
     def draw_image_at_location(self, image_path_or_object, x, y,
                                image_resample_mode=ImageResampleMode.PIXEL_ART):
