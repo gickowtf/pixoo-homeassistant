@@ -5,3 +5,4 @@
 - [CLOCKS](CLOCKS.md) (This file contains the list of all the clock faces)
 - [PV](PV.md) (YAML example for PV Page as Components)🇩🇪🇺🇸
 - [progressbar](progressbar.md) (YAML example for Progressbar as Components)🇺🇸
+- [weather](weather.md) (How to display weather data, both current and forcasts)🇺🇸
