@@ -20,7 +20,7 @@ from . import Pixoo
 from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
-from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK
+from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -158,33 +158,13 @@ class Pixoo64(Entity):
             special_pages[page_type](pixoo, self.hass, page)
             pixoo.push()
         elif page_type == "channel":
-            try:
-                channel_id = Template(str(page['id']), self.hass).async_render()
-            except TemplateError as e:
-                _LOGGER.error(f"Error rendering channel id template: {e}")
-                channel_id = page['id']
-            pixoo.set_custom_page(channel_id)
+            pixoo.set_custom_page(page['id'])
         elif page_type == "visualizer":
-            try:
-                visualizer_id = Template(str(page['id']), self.hass).async_render()
-            except TemplateError as e:
-                _LOGGER.error(f"Error rendering visualizer id template: {e}")
-                visualizer_id = page['id']
-            pixoo.set_visualizer(visualizer_id)
+            pixoo.set_visualizer(page['id'])
         elif page_type == "clock":
-            try:
-                clock_id = Template(str(page['id']), self.hass).async_render()
-            except TemplateError as e:
-                _LOGGER.error(f"Error rendering clock id template: {e}")
-                clock_id = page['id']
-            pixoo.set_clock(clock_id)
+            pixoo.set_clock(page['id'])
         elif page_type == "gif":
-            try:
-                gif_url = Template(str(page['gif_url']), self.hass).async_render()
-            except TemplateError as e:
-                _LOGGER.error(f"Error rendering gif url template: {e}")
-                gif_url = page['gif_url']
-            pixoo.play_gif(gif_url)
+            pixoo.play_gif(page['gif_url'])
         elif page_type in ["custom", "components"]:
             variables = page.get('variables', {})
             rendered_variables = {}
@@ -210,6 +190,8 @@ class Pixoo64(Entity):
                         font = ELEVEN_PIX
                     elif font_name == "clock":
                         font = CLOCK
+                    elif font_name == "pix24":
+                        font = PIX24
                     else:
                         font = FONT_PICO_8  # Font by default.
 
