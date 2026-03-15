@@ -7,7 +7,7 @@ import requests
 from PIL import Image, ImageOps
 
 from ._colors import get_rgb
-from ._font import retrieve_glyph, retrieve_glyph_width, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK
+from ._font import retrieve_glyph, retrieve_glyph_width, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
 
 import logging
 _LOGGER = logging.getLogger(__name__)
@@ -239,7 +239,7 @@ class Pixoo:
             for index, bit in enumerate(matrix):
                 if bit == 1 and index != len(matrix) - 1:
                     local_x = index % x_size
-                    local_y = int(index / x_size)
+                    local_y = int(index / x_size) # height of font
                     self.draw_pixel((xy[0] + local_x, xy[1] + local_y), rgb)
 
     def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None, align="left"):
