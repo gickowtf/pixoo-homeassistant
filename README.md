@@ -151,7 +151,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 | **Config Options** | **required**  | **Default** | **Values**                                                                                                                          | 
 |--------------------|:-------------:|-------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | position           |      Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel                                                                    |
-| image_path         | Yes(pick one) |             | image path like /config/img/haus.png                                                                                                |
+| image_path         | Yes(pick one) |             | image path like <code>/config/img/haus.png</code>  </br> do NOT use folder /config/custom_components/divoom_pixoo/img/  !!!         |
 | image_url          | Yes(pick one) |             | image url like template {{ entity image }} or https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/fuel.png   |
 | image_data         | Yes(pick one) |             | image data in base64. Convert images [here](https://base64.guru/converter/encode/image).                                            |
 | height             |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
