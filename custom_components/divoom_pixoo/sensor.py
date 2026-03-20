@@ -20,7 +20,7 @@ from . import Pixoo
 from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
-from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK
+from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -163,14 +163,14 @@ class Pixoo64(Entity):
             except TemplateError as e:
                 _LOGGER.error(f"Error rendering channel id template: {e}")
                 channel_id = page['id']
-            pixoo.set_custom_page(channel_id)
+            pixoo.set_custom_page(channel_id)            
         elif page_type == "visualizer":
             try:
                 visualizer_id = Template(str(page['id']), self.hass).async_render()
             except TemplateError as e:
                 _LOGGER.error(f"Error rendering visualizer id template: {e}")
                 visualizer_id = page['id']
-            pixoo.set_visualizer(visualizer_id)
+            pixoo.set_visualizer(visualizer_id)            
         elif page_type == "clock":
             try:
                 clock_id = Template(str(page['id']), self.hass).async_render()
@@ -210,6 +210,8 @@ class Pixoo64(Entity):
                         font = ELEVEN_PIX
                     elif font_name == "clock":
                         font = CLOCK
+                    elif font_name == "pix24":
+                        font = PIX24
                     else:
                         font = FONT_PICO_8  # Font by default.
 
