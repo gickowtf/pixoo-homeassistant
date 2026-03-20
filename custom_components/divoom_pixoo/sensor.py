@@ -158,13 +158,33 @@ class Pixoo64(Entity):
             special_pages[page_type](pixoo, self.hass, page)
             pixoo.push()
         elif page_type == "channel":
-            pixoo.set_custom_page(page['id'])
+            try:
+                channel_id = Template(str(page['id']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering channel id template: {e}")
+                channel_id = page['id']
+            pixoo.set_custom_page(channel_id)            
         elif page_type == "visualizer":
-            pixoo.set_visualizer(page['id'])
+            try:
+                visualizer_id = Template(str(page['id']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering visualizer id template: {e}")
+                visualizer_id = page['id']
+            pixoo.set_visualizer(visualizer_id)            
         elif page_type == "clock":
-            pixoo.set_clock(page['id'])
+            try:
+                clock_id = Template(str(page['id']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering clock id template: {e}")
+                clock_id = page['id']
+            pixoo.set_clock(clock_id)
         elif page_type == "gif":
-            pixoo.play_gif(page['gif_url'])
+            try:
+                gif_url = Template(str(page['gif_url']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering gif url template: {e}")
+                gif_url = page['gif_url']
+            pixoo.play_gif(gif_url)
         elif page_type in ["custom", "components"]:
             variables = page.get('variables', {})
             rendered_variables = {}
