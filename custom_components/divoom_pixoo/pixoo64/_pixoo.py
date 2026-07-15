@@ -1,5 +1,4 @@
 import base64
-import json
 from datetime import timedelta
 from enum import IntEnum
 
@@ -81,8 +80,11 @@ class Pixoo:
         # Total number of pixels
         self.pixel_count = self.size * self.size
 
-        # Generate URL
-        self.__url = 'http://{0}/post'.format(address)
+        # Generate API URLs. Older firmware uses /post, newer Pixoo64 firmware
+        # may expose the API on port 9000.
+        self.__primary_url = 'http://{0}/post'.format(address)
+        self.__fallback_url = 'http://{0}:9000/divoom_api'.format(address)
+        self.__url = None
 
         # Prefill the buffer
         self.fill()
@@ -302,7 +304,7 @@ class Pixoo:
         # Make sure the identifier is valid
         identifier = clamp(identifier, 0, 19)
 
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Draw/SendHttpText',
             'TextId': identifier,
             'x': xy[0],
@@ -313,7 +315,7 @@ class Pixoo:
             'speed': movement_speed,
             'TextString': text,
             'color': rgb_to_hex_color(color)
-        }), timeout=self.timeout)
+        })
 
         data = response.json()
         if data['error_code'] != 0:
@@ -322,28 +324,28 @@ class Pixoo:
     def set_brightness(self, brightness):
         # This won't be possible
         brightness = clamp(brightness, 0, 100)
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/SetBrightness',
             'Brightness': brightness
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
 
     def set_channel(self, channel):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/SetIndex',
             'SelectIndex': int(channel)
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
 
     def set_clock(self, clock_id):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/SetClockSelectId',
             'ClockId': int(clock_id)
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -353,20 +355,20 @@ class Pixoo:
         self.set_channel(3)
 
     def set_custom_page(self, index):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/SetCustomPageIndex',
             'CustomPageIndex': index
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
 
     def play_gif(self, gif_url):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Device/PlayTFGif',
             'FileType': 2,
             'FileName': gif_url
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -375,34 +377,34 @@ class Pixoo:
         self.set_clock(face_id)
 
     def set_screen(self, on=True):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/OnOffScreen',
             'OnOff': 1 if on else 0
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
 
     def restart_device(self):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Device/SysReboot'
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
 
     def get_state(self):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/GetAllConf'
-        }), timeout=self.timeout)
+        })
         data = response.json()
         _LOGGER.debug("Device Data (" + str(self.address) + "): " + str(data))
         return data['LightSwitch'] == 1
 
     def get_brightness(self):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/GetAllConf'
-        }), timeout=self.timeout)
+        })
         data = response.json()
         return data['Brightness']
 
@@ -413,10 +415,10 @@ class Pixoo:
         self.set_screen(True)
 
     def set_visualizer(self, equalizer_position):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Channel/SetEqPosition',
             'EqPosition': equalizer_position
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -426,12 +428,12 @@ class Pixoo:
     # total_time	Working total time of buzzer in milliseconds
     # This is according to the Divoom Docs.
     def play_buzzer(self, buzz_cycle_time: timedelta, idle_cycle_time: timedelta, total_time: timedelta):
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Device/PlayBuzzer',
             'ActiveTimeInCycle': buzz_cycle_time.total_seconds() * 1000,
             'OffTimeInCycle': idle_cycle_time.total_seconds() * 1000,
             'PlayTotalTime': total_time.total_seconds()*1000
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -444,8 +446,37 @@ class Pixoo:
             print('[x] Error on request ' + str(self.__counter))
             print(error)
 
+    def __post(self, payload):
+        if self.__url == self.__fallback_url:
+            endpoints = [self.__fallback_url]
+        else:
+            endpoints = [self.__primary_url, self.__fallback_url]
+        last_error = None
+
+        for endpoint in endpoints:
+            try:
+                response = requests.post(endpoint, json=payload, timeout=self.timeout)
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as error:
+                last_error = error
+                if endpoint == self.__primary_url:
+                    _LOGGER.warning(
+                        "Pixoo API endpoint %s unavailable for %s, trying fallback endpoint %s",
+                        self.__primary_url,
+                        self.address,
+                        self.__fallback_url,
+                    )
+                    continue
+                raise
+
+            if endpoint != self.__url:
+                self.__url = endpoint
+                _LOGGER.info("Selected Pixoo API endpoint %s for %s", self.__url, self.address)
+            return response
+
+        raise last_error
+
     def __load_counter(self):
-        response = requests.post(self.__url, '{"Command": "Draw/GetHttpGifId"}', timeout=self.timeout)
+        response = self.__post({'Command': 'Draw/GetHttpGifId'})
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -471,7 +502,7 @@ class Pixoo:
             return
 
         # Encode the buffer to base64 encoding
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Draw/SendHttpGif',
             'PicNum': 1,
             'PicWidth': self.size,
@@ -479,7 +510,7 @@ class Pixoo:
             'PicID': self.__counter,
             'PicSpeed': 1000,
             'PicData': str(base64.b64encode(bytearray(self.__buffer)).decode())
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
@@ -492,9 +523,9 @@ class Pixoo:
     def __reset_counter(self):
         if self.debug:
             print(f'[.] Resetting counter remotely')
-        response = requests.post(self.__url, json.dumps({
+        response = self.__post({
             'Command': 'Draw/ResetHttpGifId'
-        }), timeout=self.timeout)
+        })
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
