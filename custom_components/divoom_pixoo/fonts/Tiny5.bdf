@@ -1,4 +1,8 @@
 STARTFONT 2.1
+COMMENT Font: Tiny5 (5px Proportional)
+COMMENT Author: Stefan Schmidt
+COMMENT License: SIL Open Font License 1.1 (https://scripts.sil.org/OFL)
+COMMENT Source: https://github.com/Gissio/font_Tiny5
 FONT -Stefan Schmidt Art-Tiny5-Regular-R-Regular--9-9-75-75-c-80-iso10646-1
 SIZE 9 75 75
 FONTBOUNDINGBOX 16 16 -6 -4

@@ -236,7 +236,7 @@ class BdfFont:
         return sum(self.get_char_width(c) for c in str(text))
 
     def get_glyph(self, char: str) -> Optional[List[int]]:
-        """Backward compatibility: convert BDF glyph into legacy flat sprite list."""
+        """Backward compatibility: convert BDF glyph into flat bit-matrix list."""
         g = self.get_glyph_bdf(char)
         if g is None:
             return None
@@ -312,12 +312,13 @@ class BdfFont:
         return self.supports(item)
 
 
-class SpriteFont:
-    """Wrapper around existing sprite-based fonts (FONT_PICO_8, FONT_GICKO, etc.)."""
+class BitMatrixFont:
+    """Wrapper around original bit-matrix fonts (FONT_PICO_8, FONT_GICKO, etc.)."""
 
-    def __init__(self, name: str, raw_dict: Dict[str, List[int]]):
+    def __init__(self, name: str, raw_dict: Dict[str, List[int]], force_uppercase: bool = False):
         self.name = name
         self.raw_dict = raw_dict
+        self.force_uppercase = force_uppercase
         self._calculate_height()
 
     def _calculate_height(self) -> None:
@@ -328,20 +329,28 @@ class SpriteFont:
             self.height = 5
         self.line_height = self.height + 1
 
+    def _normalize_char(self, char: str) -> str:
+        return char.upper() if self.force_uppercase else char
+
+    def _normalize_text(self, text: str) -> str:
+        return str(text).upper() if self.force_uppercase else str(text)
+
     def supports(self, char: str) -> bool:
-        if char in self.raw_dict:
+        c = self._normalize_char(char)
+        if c in self.raw_dict:
             return True
-        if char in TYPOGRAPHY_FALLBACKS and TYPOGRAPHY_FALLBACKS[char] in self.raw_dict:
+        if c in TYPOGRAPHY_FALLBACKS and TYPOGRAPHY_FALLBACKS[c] in self.raw_dict:
             return True
-        return char.upper() in self.raw_dict
+        return c.upper() in self.raw_dict
 
     def get_glyph(self, char: str) -> Optional[List[int]]:
-        if char in self.raw_dict:
-            return self.raw_dict[char]
-        if char in TYPOGRAPHY_FALLBACKS and TYPOGRAPHY_FALLBACKS[char] in self.raw_dict:
-            return self.raw_dict[TYPOGRAPHY_FALLBACKS[char]]
-        if char.upper() in self.raw_dict:
-            return self.raw_dict[char.upper()]
+        c = self._normalize_char(char)
+        if c in self.raw_dict:
+            return self.raw_dict[c]
+        if c in TYPOGRAPHY_FALLBACKS and TYPOGRAPHY_FALLBACKS[c] in self.raw_dict:
+            return self.raw_dict[TYPOGRAPHY_FALLBACKS[c]]
+        if c.upper() in self.raw_dict:
+            return self.raw_dict[c.upper()]
         return None
 
     def get_glyph_bdf(self, char: str) -> Optional[Dict[str, Any]]:
@@ -370,8 +379,9 @@ class SpriteFont:
         return 0
 
     def get_text_width(self, text: str) -> int:
+        norm_text = self._normalize_text(text)
         length = 0
-        for char in str(text):
+        for char in norm_text:
             length += self.get_char_width(char) + 1
         return max(0, length - 1)
 
@@ -398,8 +408,9 @@ class SpriteFont:
         rgb: Tuple[int, int, int] = (255, 255, 255),
         align: str = "left",
     ) -> int:
+        norm_text = self._normalize_text(text)
         y_offset = 0
-        for line in str(text).split("\n"):
+        for line in norm_text.split("\n"):
             if align == "center":
                 x_offset = int(self.get_text_width(line) / 2) * -1
             elif align == "right":
@@ -417,23 +428,23 @@ class SpriteFont:
         return y_offset
 
     def __getitem__(self, item: str) -> Optional[List[int]]:
-        return self.raw_dict.get(item)
+        return self.get_glyph(item)
 
     def __contains__(self, item: str) -> bool:
-        return item in self.raw_dict
+        return self.supports(item)
 
 
 class FontManager:
     """
-    Central manager for bitmap and BDF fonts.
+    Central manager for BDF and bit-matrix fonts.
     Supports case-insensitive lookups, lazy on-demand BDF loading,
-    and wrapping built-in sprite fonts.
+    and wrapping hardcoded dictionary fonts.
     """
 
     _instance: Optional['FontManager'] = None
 
     def __init__(self, scan_dirs: Optional[List[str]] = None):
-        self._fonts: Dict[str, Union[BdfFont, SpriteFont]] = {}
+        self._fonts: Dict[str, Union[BdfFont, BitMatrixFont]] = {}
         self._display_names: Dict[str, str] = {}
         self._available_bdf_files: Dict[str, Tuple[str, str]] = {}  # key -> (display_name, file_path)
         self._register_builtins()
@@ -450,7 +461,7 @@ class FontManager:
         return cls._instance
 
     def _register_builtins(self) -> None:
-        """Register the built-in sprite fonts."""
+        """Register the built-in bit-matrix fonts."""
         from ._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
 
         builtins = [
@@ -463,16 +474,16 @@ class FontManager:
         ]
 
         for name, font_dict in builtins:
-            self.register_sprite_font(name, font_dict)
+            self.register_matrix_font(name, font_dict, force_uppercase=False)
 
-    def register_sprite_font(self, name: str, font_dict: Dict[str, List[int]]) -> SpriteFont:
-        """Register a sprite-based font under its lowercase name"""
-        sprite_font = SpriteFont(name, font_dict)
+    def register_matrix_font(self, name: str, font_dict: Dict[str, List[int]], force_uppercase: bool = False) -> BitMatrixFont:
+        """Register a hardcoded bit-matrix font under its lowercase name"""
+        matrix_font = BitMatrixFont(name, font_dict, force_uppercase=force_uppercase)
         key = name.lower().replace("font_", "")
-        self._fonts[key] = sprite_font
-        self._fonts[f"font_{key}"] = sprite_font
+        self._fonts[key] = matrix_font
+        self._fonts[f"font_{key}"] = matrix_font
         self._display_names[key] = name
-        return sprite_font
+        return matrix_font
 
     def register_bdf_font(self, bdf_font: BdfFont) -> None:
         """Register a BdfFont instance by its lowercase name"""
@@ -533,42 +544,48 @@ class FontManager:
                 _LOGGER.debug("Indexed %d fonts from %s", loaded, dir_path)
         return total
 
-    def get_font(self, name: Union[str, Any], fallback: bool = True) -> Optional[Union[BdfFont, SpriteFont]]:
+    def get_font(self, name: Union[str, Any], fallback: bool = True) -> Optional[Union[BdfFont, BitMatrixFont]]:
         """
         Look up a font by name (case-insensitive).
         Loads BDF fonts lazily into memory upon first request.
         """
-        if isinstance(name, (BdfFont, SpriteFont)):
+        if isinstance(name, (BdfFont, BitMatrixFont)):
             return name
 
         if isinstance(name, dict):
-            return SpriteFont("custom_dict", name)
+            return BitMatrixFont("custom_dict", name)
 
         if not isinstance(name, str) or not name.strip():
             return self._fonts.get("pico_8") if fallback else None
 
         clean_name = name.strip().lower().replace("font_", "")
 
-        # 1. Check if already parsed in memory
+        # 1. Return already loaded BDF font from memory cache
+        if clean_name in self._fonts and isinstance(self._fonts[clean_name], BdfFont):
+            return self._fonts[clean_name]
+
+        # 2. Check if indexed BDF file exists (lazy load BDF, upgrading any built-in fallback)
+        if clean_name in self._available_bdf_files:
+            disp_name, fpath = self._available_bdf_files.pop(clean_name)
+            font = self.load_bdf_file(fpath, disp_name)
+            if font is not None:
+                return font
+
+        # 3. Check if already registered in memory (e.g. built-in bit-matrix fonts)
         if clean_name in self._fonts:
             return self._fonts[clean_name]
 
-        # 2. Check if indexed for lazy loading
-        if clean_name in self._available_bdf_files:
-            disp_name, fpath = self._available_bdf_files[clean_name]
-            font = self.load_bdf_file(fpath, disp_name)
-            if font is not None:
-                return font
-
-        # 3. Try hyphen/underscore variations (e.g. pico-8 -> pico_8)
+        # 4. Try hyphen/underscore variations (e.g. pico-8 -> pico_8)
         alt_name = clean_name.replace("-", "_")
-        if alt_name in self._fonts:
+        if alt_name in self._fonts and isinstance(self._fonts[alt_name], BdfFont):
             return self._fonts[alt_name]
         if alt_name in self._available_bdf_files:
-            disp_name, fpath = self._available_bdf_files[alt_name]
+            disp_name, fpath = self._available_bdf_files.pop(alt_name)
             font = self.load_bdf_file(fpath, disp_name)
             if font is not None:
                 return font
+        if alt_name in self._fonts:
+            return self._fonts[alt_name]
 
         if fallback:
             _LOGGER.warning("Unknown font '%s', falling back to PICO_8.", name)
@@ -589,7 +606,7 @@ class FontManager:
 
 __all__ = (
     "BdfFont",
-    "SpriteFont",
+    "BitMatrixFont",
     "FontManager",
     "load_bdf_font",
     "normalize_typography",

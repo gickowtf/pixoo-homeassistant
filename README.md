@@ -698,13 +698,32 @@ mode: single
 
 ## Fonts
 
-| Font       | Image                                      |
-|------------|--------------------------------------------|
-| gicko      | ![FONT_GICKO.png](images%2FFONT_GICKO.png) |
-| five_pix   | ![five_pix.png](images%2Ffive_pix.png)     |
-| pico_8     | ![PICO_8.png](images%2FPICO_8.png)         |
-| eleven_pix | ![eleven_pix.png](images%2Feleven_pix.png) |
-| clock      | ![CLOCK.png](images%2FCLOCK.png)           |
+The integration includes two categories of fonts:
+
+### 1. Bundled BDF Pixel Fonts (Multilingual & Unicode Symbols)
+These open-source Adobe BDF fonts provide all kinds of characters and symbols, including full European accents, Cyrillic, fractions, directional arrows, currency signs, math symbols, and more.
+
+| Font | Character Coverage & Language Support | Sample |
+| :--- | :--- | :--- |
+| **`Tiny5`** | **1,650+ Glyphs (5px proportional):** Broad Western & Central European Latin (`á é ñ ç`), Cyrillic, fractions (`¼ ½ ¾`), arrows (`← ↑ → ↓`), currencies (`₿ € £ ¥ ¢ $`), math (`° ± × ÷`), and symbols (`© ® ™`). | ![Tiny5.png](images%2FTiny5.png) |
+| **`PixelifySans`** | **570+ Glyphs (7px):** Proportional modern pixel font with a flourish, supporting Latin, Cyrillic, currencies (`€ £ ¥`), and math symbols (`° ± ×`). | ![PixelifySans.png](images%2FPixelifySans.png) |
+| **`PressStart2P`** | **650+ Glyphs (8px Monospace):** Classic 8-bit arcade font supporting Latin, Greek, Cyrillic, math, and retro gaming symbols (`★`, `♥`, `♪`, `◆`, `← ↑ → ↓`). | ![PressStart2P.png](images%2FPressStart2P.png) |
+| **`PICO_8`** | **265 Glyphs (3x5 / 4px Monospace):** Official PICO-8 console font, and tinier than Tiny5, supporting uppercase (A–Z), small-caps (a–z), numbers, Katakana, arrows, and retro game symbols (`♥`, `★`, `♪`, `◆`, `⌂`, `⬅ ➡ ⬆ ⬇`). | ![PICO_8.png](images%2FPICO_8.png) |
+
+### 2. Built-in Bit-Matrix Fonts (A–Z, a–z, 0–9)
+Fast, compact hardcoded fonts for standard English text, clock displays, and countdown numbers:
+
+| Font | Character Set & Description | Sample |
+| :--- | :--- | :--- |
+| **`five_pix`** | 5x5 uppercase (A–Z), lowercase (a–z), 0–9, and punctuation (`. , ! ? - / °`). | ![five_pix.png](images%2Ffive_pix.png) |
+| **`gicko`** | 6x6 uppercase (A–Z), 0–9, and symbols (lowercase automatically converts to uppercase). | ![FONT_GICKO.png](images%2FFONT_GICKO.png) |
+| **`eleven_pix`** | 11px tall uppercase headers (A–Z) and large numbers (0–9). | ![eleven_pix.png](images%2Feleven_pix.png) |
+| **`clock`** | Specialized digital clock numbers (0–9) and colon (`:`). | ![CLOCK.png](images%2FCLOCK.png) |
+
+### Custom Fonts
+You can drop any standard `.bdf` bitmap font file into `/config/fonts/` (for example `unifont.bdf` or `MinecraftDefault.bdf`) and use it in any text component with `font: unifont`.
+
+See [`READMES/fonts.md`](READMES/fonts.md) for full configuration examples and page layouts.
 
 
 <br>
