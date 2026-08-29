@@ -1,4 +1,5 @@
 # __init__.py
+import os
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 import logging
@@ -6,9 +7,19 @@ import logging
 from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import CURRENT_ENTRY_VERSION, DOMAIN, VERSION
-from .pixoo64 import Pixoo
+from .pixoo64 import Pixoo, FontManager
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def setup_font_manager(hass: HomeAssistant) -> FontManager:
+    """Initialize FontManager and scan font directories."""
+    bundled_dir = os.path.join(os.path.dirname(__file__), "fonts")
+    user_dir = hass.config.path("fonts") if hasattr(hass, "config") and hasattr(hass.config, "path") else "/config/fonts"
+    esphome_dir = hass.config.path("esphome", "fonts") if hasattr(hass, "config") and hasattr(hass.config, "path") else "/config/esphome/fonts"
+
+    font_manager = FontManager.get_instance([bundled_dir, user_dir, esphome_dir])
+    return font_manager
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -25,8 +36,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER.error("Error setting up Pixoo: %s", e)
         raise ConfigEntryNotReady  # Raising not ready instead of false will make HA try again later
 
+    try:
+        font_manager = await hass.async_add_executor_job(setup_font_manager, hass)
+    except Exception as e:
+        _LOGGER.error("Error setting up Pixoo FontManager: %s", e)
+        font_manager = FontManager.get_instance()
+
     hass.data[DOMAIN][entry.entry_id] = {}
     hass.data[DOMAIN][entry.entry_id]['pixoo'] = pix
+    hass.data[DOMAIN][entry.entry_id]['font_manager'] = font_manager
     hass.data[DOMAIN][entry.entry_id]['entry_data'] = entry.options
     hass.data[DOMAIN][entry.entry_id]['available'] = True
 

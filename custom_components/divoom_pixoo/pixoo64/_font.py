@@ -743,13 +743,17 @@ PIX24 = {' ': [ 0, 0, 0, 0, 0, 0, 0,
 
 
 def retrieve_glyph(character, font):
-    if character in font:
+    if hasattr(font, 'get_glyph'):
+        return font.get_glyph(character)
+    if font is not None and character in font:
         return font[character]
 
     return None
 
 def retrieve_glyph_width(character, font):
-    if character in font:
+    if hasattr(font, 'get_char_width'):
+        return font.get_char_width(character)
+    if font is not None and character in font:
         return font[character][-1]
 
     return 0
@@ -759,3 +763,4 @@ def supported_characters():
 
 
 __all__ = (retrieve_glyph, retrieve_glyph_width, supported_characters, FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, PIX24)
+

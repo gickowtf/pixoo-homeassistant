@@ -233,6 +233,10 @@ class Pixoo:
     def draw_character(self, character, xy=(0, 0), rgb=get_rgb("white"), font=None):
         if font is None:
             font = FONT_PICO_8
+        if hasattr(font, 'draw_character'):
+            font.draw_character(self, character, xy, rgb)
+            return
+
         matrix = retrieve_glyph(character, font)
         if matrix is not None:
             x_size = matrix[-1]
@@ -245,6 +249,9 @@ class Pixoo:
     def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None, align="left"):
         if font is None:
             font = FONT_PICO_8
+
+        if hasattr(font, 'draw_text'):
+            return font.draw_text(self, text, xy, rgb, align)
 
         y_offset = 0
         for line in text.split("\n"):
@@ -265,18 +272,26 @@ class Pixoo:
             
             # Since for now every character is at least smaller than the '0', this works.
             dummy_char = retrieve_glyph("0", font)
-            height = int( (len(dummy_char)-1) / dummy_char[-1] )
+            if dummy_char and len(dummy_char) > 1 and dummy_char[-1] > 0:
+                height = int((len(dummy_char)-1) / dummy_char[-1])
+            else:
+                height = 5
             y_offset += height+1
+
+        return y_offset
     
     def get_text_width(self, text, font=None):
         if font is None:
             font = FONT_PICO_8
 
+        if hasattr(font, 'get_text_width'):
+            return font.get_text_width(text)
+
         length = 0
         for index, character in enumerate(text):
             length += retrieve_glyph_width(character, font) + 1
 
-        return length - 1
+        return max(0, length - 1)
 
     def draw_text_at_location_rgb(self, text, x, y, r, g, b):
         self.draw_text(text, (x, y), (r, g, b))
