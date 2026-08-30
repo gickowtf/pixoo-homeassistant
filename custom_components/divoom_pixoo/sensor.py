@@ -20,7 +20,9 @@ from . import Pixoo
 from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
+from .pixoo64 import FontManager
 from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
+
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -153,9 +155,15 @@ class Pixoo64(Entity):
         pixoo = self._pixoo
         pixoo.clear()
 
+        font_manager = None
+        if self.hass and DOMAIN in self.hass.data:
+            font_manager = self.hass.data[DOMAIN].get(self._config_entry.entry_id, {}).get('font_manager')
+        if font_manager is None:
+            font_manager = FontManager.get_instance()
+
         page_type = page['page_type'].lower()
         if page_type in special_pages:
-            special_pages[page_type](pixoo, self.hass, page)
+            special_pages[page_type](pixoo, self.hass, page, font_manager)
             pixoo.push()
         elif page_type == "channel":
             try:
@@ -201,25 +209,14 @@ class Pixoo64(Entity):
                         _LOGGER.error("Template render error: %s", e)
                         rendered_text = "Template Error"
 
-                    font_name = component.get('font', "").lower()
-                    if font_name == "gicko":
-                        font = FONT_GICKO
-                    elif font_name == "five_pix":
-                        font = FIVE_PIX
-                    elif font_name == "eleven_pix":
-                        font = ELEVEN_PIX
-                    elif font_name == "clock":
-                        font = CLOCK
-                    elif font_name == "pix24":
-                        font = PIX24
-                    else:
-                        font = FONT_PICO_8  # Font by default.
+                    font_name = component.get('font', "")
+                    font = font_manager.get_font(font_name)
 
                     rendered_color = render_color(component.get('color'), self.hass, variables=rendered_variables)
 
                     align = component.get('align', "").lower()
 
-                    pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font, align)
+                    pixoo.draw_text(rendered_text, tuple(component['position']), rendered_color, font, align)
 
                 elif component['type'] == "image":
                     try:
