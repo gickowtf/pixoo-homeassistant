@@ -8,7 +8,7 @@ from PIL import Image, ImageOps
 
 from ._colors import get_rgb
 from ._font import retrieve_glyph, retrieve_glyph_width, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
-from ._gif import clamp_pic_speed
+from ._gif import clamp_pic_speed, MAX_ANIMATION_FRAMES
 
 import logging
 _LOGGER = logging.getLogger(__name__)
@@ -345,6 +345,16 @@ class Pixoo:
             _LOGGER.warning("Dropping %s animation frame(s) with wrong buffer size.",
                             len(frames) - len(valid))
 
+        if len(valid) > MAX_ANIMATION_FRAMES:
+            # The frame cap lives here, not in the decoder: each frame is a
+            # ~16 kB post and the device goes unresponsive under long page
+            # rotations (upstream #153). A hosted page costs the device nothing
+            # per frame, so the decoder must hand over every frame and only the
+            # pixel push trims.
+            _LOGGER.warning("Truncating animation from %s to %s frames.",
+                            len(valid), MAX_ANIMATION_FRAMES)
+            valid = valid[:MAX_ANIMATION_FRAMES]
+
         # Consume a single PicID slot for the whole animation so the next
         # static push cannot collide with it.
         self.__counter = self.__counter + 1
@@ -475,14 +485,27 @@ class Pixoo:
             self.__error(data)
 
     def play_gif(self, gif_url):
-        response = self.__post({
-            'Command': 'Device/PlayTFGif',
-            'FileType': 2,
-            'FileName': gif_url
-        })
-        data = response.json()
-        if data['error_code'] != 0:
+        """Play a hosted GIF via ``Device/PlayTFGif`` (FileType 2 URL).
+
+        Returns True when the device ACKs with ``error_code`` 0. Callers
+        fall back to :meth:`push_animation` on False.
+        """
+        try:
+            response = self.__post({
+                'Command': 'Device/PlayTFGif',
+                'FileType': 2,
+                'FileName': gif_url
+            })
+            data = response.json()
+        except (requests.RequestException, ConnectionError, TimeoutError, ValueError) as exc:
+            # The URL is not logged: a hosted page's URL carries the folder token
+            # that is the only thing keeping an unauthenticated page private.
+            _LOGGER.warning("PlayTFGif failed (%s); falling back.", exc)
+            return False
+        if data.get('error_code') != 0:
             self.__error(data)
+            return False
+        return True
 
     def set_face(self, face_id):
         self.set_clock(face_id)

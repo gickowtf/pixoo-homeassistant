@@ -1,24 +1,30 @@
 import asyncio
 import base64
+import hashlib
 import logging
+import os
+import secrets
+import shutil
 from asyncio import Task
 from datetime import timedelta
 from io import BytesIO
+from pathlib import Path
 
 import requests
 import voluptuous as vol
 from PIL import Image
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CoreState, HomeAssistant
 from homeassistant.helpers import entity_platform, config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.template import Template, TemplateError
+from homeassistant.helpers.network import get_url
 from urllib3.exceptions import NewConnectionError
 
 from . import Pixoo
 from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
-from .pixoo64._gif import extract_frames
+from .pixoo64._gif import encode_page_gif, extract_frames
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
 from .pixoo64 import FontManager
@@ -27,9 +33,54 @@ from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK,
 
 _LOGGER = logging.getLogger(__name__)
 
+# Composited pages live in this subdirectory of ``hass.config.path("www")``,
+# which Home Assistant serves **without authentication** at ``/local/``.
+HOSTED_PAGES_DIRNAME = "pixoo_pages"
+HOSTED_PAGE_FILENAME = "page.gif"
+
+
+def entry_page_prefix(entry_id: str) -> str:
+    """The 8 hex chars marking every page folder of one config entry.
+
+    Not a secret: it only has to say who owns a folder, so a new run can sweep
+    its own leftovers without looking into another device's page.
+    """
+    return hashlib.sha256(str(entry_id).encode()).hexdigest()[:8]
+
+
+def page_folder_name(entry_id: str) -> str:
+    """One config entry's page folder for this run: ``<prefix>-<token>``.
+
+    The token is random per setup, and it is the only access control a page has
+    (``www/`` is served without authentication): it makes the URL unguessable
+    and it retires the previous run's URL before that folder is even swept.
+    """
+    return f"{entry_page_prefix(entry_id)}-{secrets.token_urlsafe(12)}"
+
+
+def remove_page_folders(hass: HomeAssistant, entry_id: str) -> None:
+    """Delete one entry's page folders. Blocking: call from an executor.
+
+    Only folders carrying the entry's own prefix are removed; another device's
+    page - or a ``page.gif`` from an older layout - is never touched. Called at
+    setup, because a restart leaves its folder behind (Home Assistant does not
+    unload entries on shutdown), and again at unload.
+    """
+    root = Path(hass.config.path("www")) / HOSTED_PAGES_DIRNAME
+    if not root.is_dir():
+        return
+    prefix = f"{entry_page_prefix(entry_id)}-"
+    for folder in root.iterdir():
+        if folder.is_dir() and folder.name.startswith(prefix):
+            shutil.rmtree(folder, ignore_errors=True)
+
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities):
-    async_add_entities([ Pixoo64(config_entry=config_entry, pixoo=hass.data[DOMAIN][config_entry.entry_id]["pixoo"]) ], True)
+    entity = Pixoo64(config_entry=config_entry, pixoo=hass.data[DOMAIN][config_entry.entry_id]["pixoo"])
+    # Sweep what the previous run left behind: this entity just minted a new
+    # folder token, so those folders are already unreachable.
+    await hass.async_add_executor_job(remove_page_folders, hass, config_entry.entry_id)
+    async_add_entities([entity], True)
 
 
 class Pixoo64(Entity):
@@ -41,6 +92,13 @@ class Pixoo64(Entity):
         self._pages = self._config_entry.options.get('pages_data', [])
         self._scan_interval = timedelta(seconds=int(self._config_entry.options.get('scan_interval', timedelta(seconds=15))))
         self._current_page_index = -1  # Start at -1 so that the first page is 0.
+        # Digest of the last composited page played via the hosted-gif path;
+        # an unchanged digest means the page is already on screen.
+        self._last_hosted_digest: str | None = None
+        # This run's page folder (URL sent with every play) and the 8 hex chars
+        # that identify our folders in a log line or a directory listing.
+        self._page_folder = page_folder_name(self._config_entry.entry_id)
+        self._page_prefix = entry_page_prefix(self._config_entry.entry_id)
         self._attr_has_entity_name = True
         self._attr_name = 'Current Page'
         self._attr_extra_state_attributes = {'TotalPages': len(self._pages)}
@@ -93,14 +151,15 @@ class Pixoo64(Entity):
             "update_page"
         )
 
-        # Continue with the setup
-        if DOMAIN in self.hass.data:
-            self.hass.data[DOMAIN].setdefault(self._config_entry.entry_id, {})['sensor'] =  self
         await self._async_next_page()
 
     async def async_will_remove_from_hass(self):
         """When entity is being removed from hass."""
         self.cancel_update_task()
+        # Take this run's page folder with us; a folder from an earlier run is
+        # swept by the next setup (entry reloads, options updates).
+        await self.hass.async_add_executor_job(
+            remove_page_folders, self.hass, self._config_entry.entry_id)
 
     async def async_schedule_next_page(self, wait_time: float):
         _LOGGER.debug("Scheduling next page in %s seconds for %s", wait_time, self._pixoo.address)
@@ -128,6 +187,11 @@ class Pixoo64(Entity):
 
     async def _async_next_page(self):
         if self.hass.data[DOMAIN][self._config_entry.entry_id]['available'] is False:
+            # The panel is unreachable, so whatever it shows now is not
+            # necessarily our composited page (a reboot drops the hosted
+            # player): forget the digest and send the page again once it
+            # answers.
+            self._last_hosted_digest = None
             _LOGGER.debug("Device is not available. Not updating.")
             self.schedule_update_ha_state()
             await self.async_schedule_next_page(self._scan_interval.total_seconds())
@@ -166,6 +230,10 @@ class Pixoo64(Entity):
                 try:
                     await self._async_render_page(self.page)
                 except:
+                    # A send path raised: the panel may be mid-reboot or the
+                    # page may be half drawn, so the digest is no longer
+                    # trustworthy.
+                    self._last_hosted_digest = None
                     _LOGGER.error("Error rendering page for %s. Is the device connected to the network?", self._pixoo.address)
             else:
                 self._current_page_index = (self._current_page_index + 1) % len(self._pages)
@@ -182,6 +250,13 @@ class Pixoo64(Entity):
             font_manager = FontManager.get_instance()
 
         page_type = page['page_type'].lower()
+        if page_type not in ["custom", "components"]:
+            # Stock content (a dial, a channel, a visualizer, a special page, a
+            # gif preview) takes the panel off our hosted gif player, so the
+            # digest memo - "this composited page is on screen" - stops being
+            # true. Forget it, or the next components render of the same bytes
+            # is skipped and the panel is left sitting on the stock page.
+            self._last_hosted_digest = None
         if page_type in special_pages:
             special_pages[page_type](pixoo, self.hass, page, font_manager)
             pixoo.push()
@@ -233,11 +308,15 @@ class Pixoo64(Entity):
             self._render_components(pixoo, components, rendered_variables, font_manager)
 
     def _render_components(self, pixoo, components, rendered_variables, font_manager):
-        """Composite the page once per animation frame, then push it.
+        """Composite the page once per animation frame, then show it.
 
         Every component replays for each frame, so later components paint over
-        earlier ones exactly like a static page. A page without animated images
-        renders a single frame, which ``push_animation`` sends statically.
+        earlier ones exactly like a static page. Multi-frame pages are encoded
+        as one GIF, served from memory through a short-lived signed URL and
+        played via ``Device/PlayTFGif``, so the display never shows the HttpGif
+        buffering screen; a failed hosted play falls back to
+        :meth:`Pixoo.push_animation`. A page without animated images renders a
+        single frame, which is always pushed as pixels.
         """
         # Per render, not per frame: sources and templates may change between
         # renders, but every frame of one page has to show the same content.
@@ -259,7 +338,81 @@ class Pixoo64(Entity):
                 self._draw_component_frame(pixoo, component, rendered_variables, frame_index, font_manager)
             rendered.append(pixoo.get_buffer())
         pixoo.clear()
+        if len(rendered) > 1:
+            self._play_hosted_animation(pixoo, rendered, pic_speed)
+            return
+        self._push_frames(pixoo, rendered, pic_speed)
+
+    def _push_frames(self, pixoo, rendered, pic_speed):
+        """Show ``rendered`` as pushed pixels (the non-hosted path).
+
+        Pushing takes the panel off our hosted gif player, so the memo saying
+        "this composited page is on screen" stops being true: forget it, or
+        the next render of those same bytes is skipped and the panel is left
+        showing something else.
+        """
+        self._last_hosted_digest = None
         pixoo.push_animation(rendered, pic_speed)
+
+    def _play_hosted_animation(self, pixoo, rendered, pic_speed):
+        """Write ``rendered`` as this entry's page gif and play it.
+
+        The page is written to this entry's own folder (see
+        :func:`page_folder_name`) and played via ``Device/PlayTFGif``, so the
+        display swaps atomically and never shows the HttpGif buffering screen.
+        The panel fetches that URL once per play, so an unchanged digest means
+        the page is already on screen and no play is sent.
+
+        Falls back to :meth:`Pixoo.push_animation` when hosting or playback
+        fails, so the page still animates (with the buffering screen) rather
+        than freezing on the previous page.
+        """
+        if self.hass.state is not CoreState.running:
+            # The first rotation tick can fire during platform setup, before
+            # Home Assistant's HTTP server answers: the panel then times out on
+            # the fetch and refuses connections for ~30 s. hass.is_running is
+            # not this test - it is already True while STARTING.
+            _LOGGER.debug("Home Assistant is not running yet; pushing frames.")
+            self._push_frames(pixoo, rendered, pic_speed)
+            return
+        try:
+            base_url = get_url(self.hass, allow_external=False)
+        except Exception as exc:  # misconfigured internal URL
+            _LOGGER.warning("Hosted animation unavailable (%s); pushing frames.", exc)
+            self._push_frames(pixoo, rendered, pic_speed)
+            return
+        if base_url.startswith("https://"):
+            # Device-side cloud fetch over TLS is unproven; stay on pixels.
+            _LOGGER.debug("Hosted animation skipped for https base URL; pushing frames.")
+            self._push_frames(pixoo, rendered, pic_speed)
+            return
+        try:
+            blob, digest = encode_page_gif(rendered, pixoo.size, pic_speed)
+            dest = (Path(self.hass.config.path("www")) / HOSTED_PAGES_DIRNAME
+                    / self._page_folder / HOSTED_PAGE_FILENAME)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            # tmp + replace, so a fetch never sees a half-written page.
+            tmp = dest.with_name(f".{HOSTED_PAGE_FILENAME}.tmp")
+            tmp.write_bytes(blob)
+            os.replace(tmp, dest)
+            page_url = (f"{base_url}/local/{HOSTED_PAGES_DIRNAME}/"
+                        f"{self._page_folder}/{HOSTED_PAGE_FILENAME}")
+        except Exception as exc:
+            _LOGGER.warning("Hosted animation unavailable (%s); pushing frames.", exc)
+            self._push_frames(pixoo, rendered, pic_speed)
+            return
+        # The folder token is what keeps an unauthenticated page private, so it
+        # stays out of the log even at debug; the prefix is enough to tell two
+        # devices' folders apart.
+        _LOGGER.debug("Hosted page ready: %s/local/%s/%s-.../ (digest %s)",
+                      base_url, HOSTED_PAGES_DIRNAME, self._page_prefix, digest)
+        if digest == self._last_hosted_digest:
+            _LOGGER.debug("Hosted animation unchanged (digest %s); not re-playing.",
+                          digest)
+            return
+        self._last_hosted_digest = digest
+        if not pixoo.play_gif(page_url):
+            self._push_frames(pixoo, rendered, pic_speed)
 
     def _load_image_frames(self, component, rendered_variables):
         """Decode an image component into (frames, pic_speed, resample_mode).

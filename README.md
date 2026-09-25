@@ -99,6 +99,13 @@ You can also set the duration of a page in seconds. This will override the scan 
 > [!NOTE]
 > The enabled tag and duration tag only apply when used in the configuration. Therefore, they won't word in the service.
 
+> [!IMPORTANT]
+> Components pages render once per rotation entry: text like
+> `{{ now().strftime('%H:%M') }}` bakes into the page as pixels and stays
+> frozen for the whole duration. A 180 s page shows a clock up to 3 minutes
+> old. For minute-fresh clocks, repeat the page as identical 60 s entries
+> (e.g. three in a row for ~180 s of presence) - each rotation re-renders.
+
 ## Page: Components
 A components page  turns your Pixoo into your canvas!  You can tie multiple text/image configs to a single page.
 
@@ -170,11 +177,30 @@ Example
 
 Animated images (GIF/WebP/APNG) inside a `components` page animate in place:
 every frame of the source is composited with the rest of the page (text,
-rectangles, static images) and pushed as one looping animation, so static
-content stays still while the image moves. At most 32 frames are pushed per
-draw; longer sources are truncated. Frames post one at a time with a short
-pause (~150 ms), so a 30-frame animation takes a few seconds; if a push is
-interrupted, the first frame is re-sent as a static image.
+rectangles, static images) into one looping GIF that the panel plays itself
+via `Device/PlayTFGif`, so the display swaps atomically with no HttpGif
+buffering screen. Every frame is served; if hosting or playback fails, the page
+falls back to multi-frame `SendHttpGif`, which sends at most 32 frames per draw
+(longer sources are truncated on that path).
+
+The page is written to `www/pixoo_pages/<folder>/page.gif`, in a folder of its
+own: an 8-character hash of the config entry plus a random token minted at
+every Home Assistant start. Everything under `www/` is served **without
+authentication**, so anyone who knows the exact URL can fetch the current page,
+templated sensor values and all - that random folder name is the only thing
+keeping it out of reach, and it is never logged (only its 8-character prefix
+is, at debug level). A folder from a previous start is deleted at the next
+start, and the entry's folders are deleted when the entry is unloaded.
+
+> [!IMPORTANT]
+> The panel fetches the page from Home Assistant itself, so HA's **internal
+> URL** has to be one the panel can reach: set it to an IP-based address (for
+> example `http://192.168.1.190:8123`), not `homeassistant.local` - the panel
+> does not resolve mDNS names. An `https://` internal URL falls back to pushing
+> frames, because the device-side fetch over TLS is unproven, and so does
+> anything the panel is asked to play before Home Assistant has finished
+> starting.
+
 ```yaml
     - type: image
       position: [0, 0]
