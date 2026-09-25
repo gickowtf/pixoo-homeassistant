@@ -1,5 +1,6 @@
 import base64
 import json
+import time
 from datetime import timedelta
 from enum import IntEnum
 
@@ -8,6 +9,7 @@ from PIL import Image, ImageOps
 
 from ._colors import get_rgb
 from ._font import retrieve_glyph, retrieve_glyph_width, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
+from ._gif import clamp_pic_speed
 
 import logging
 _LOGGER = logging.getLogger(__name__)
@@ -67,6 +69,9 @@ class Pixoo:
     __counter = 0
     __refresh_counter_limit = 32
     timeout = 9
+    # Pause between animation frames: the device RSTs back-to-back 16 kB
+    # posts, failing every push at ~20/30 frames. 29 x 0.15 s ~= 4.4 s/push.
+    frame_pause = 0.15
 
     def __init__(self, address, size=64, debug=False, refresh_connection_automatically=True):
         assert size in [16, 32, 64], \
@@ -293,6 +298,97 @@ class Pixoo:
     def push(self):
         self.__send_buffer()
 
+    def get_buffer(self):
+        """Return a copy of the current raw RGB buffer (size*size*3 ints)."""
+        return list(self.__buffer)
+
+    def push_animation(self, frames, pic_speed=200):
+        """Push pre-rendered buffers as one looping device-side animation.
+
+        Every entry of ``frames`` is a raw RGB buffer as returned by
+        :meth:`get_buffer`. The device loops the set in place, so static page
+        content baked into each frame stays still while animated parts move.
+        A single frame falls back to :meth:`push`.
+        """
+        if not frames:
+            return
+        if len(frames) == 1:
+            self.__buffer = list(frames[0])
+            self.push()
+            return
+
+        pic_speed = clamp_pic_speed(pic_speed)
+
+        expected = self.pixel_count * 3
+        valid = [frame for frame in frames if len(frame) == expected]
+        if not valid:
+            _LOGGER.error("Animation aborted: no frame matches the %s-byte buffer size.", expected)
+            return
+        if len(valid) != len(frames):
+            _LOGGER.warning("Dropping %s animation frame(s) with wrong buffer size.",
+                            len(frames) - len(valid))
+
+        # Consume a single PicID slot for the whole animation so the next
+        # static push cannot collide with it.
+        self.__counter = self.__counter + 1
+        if self.refresh_connection_automatically and self.__counter >= self.__refresh_counter_limit:
+            self.__counter = 1
+
+        if self.debug:
+            print(f'[.] Pushed animation of {len(valid)} frames (simulated)')
+            self.__buffers_send = self.__buffers_send + 1
+            return
+
+        # Mandatory: without ResetHttpGifId the device ACKs (error_code 0)
+        # but silently discards a multi-frame push. When the reset itself does
+        # not land - refused, or no answer at all - the frames would be
+        # discarded the same way, so show the page's first frame statically
+        # instead of pushing an animation the device throws away.
+        try:
+            reset_ok = self.__reset_counter()
+        except (requests.RequestException, ConnectionError, TimeoutError, ValueError) as exc:
+            _LOGGER.warning("ResetHttpGifId failed (%s); showing first frame static.", exc)
+            self.__push_first_frame_static(valid[0])
+            return
+        if not reset_ok:
+            _LOGGER.warning("ResetHttpGifId refused; the device would discard the "
+                            "animation. Showing first frame static.")
+            self.__push_first_frame_static(valid[0])
+            return
+
+        pic_id = self.__counter
+        total = len(valid)
+        sent = 0
+        for offset, frame in enumerate(valid):
+            if offset > 0:
+                # The device resets TCP under back-to-back 16 kB frame posts.
+                # A short pause between frames keeps the burst under its limit.
+                time.sleep(self.frame_pause)
+            if self.__send_gif_frame(total, offset, pic_id, pic_speed, frame,
+                                     allow_failure=True):
+                sent += 1
+            else:
+                break
+
+        self.__buffers_send = self.__buffers_send + sent
+        if 0 < sent < total:
+            # Partial animation leaves the device mid-sequence; re-push the
+            # first frame as a static page so the display never freezes.
+            _LOGGER.warning("Animation partial (%s/%s frames); showing first frame static.",
+                            sent, total)
+            self.__push_first_frame_static(valid[0])
+
+    def __push_first_frame_static(self, frame):
+        """Show one frame of an animation as a static page.
+
+        Recovery for the paths that leave the device without a full sequence:
+        a reset that did not land, or a push that stopped partway. A static
+        first frame at least shows the page instead of freezing on the
+        previous one.
+        """
+        self.__buffer = list(frame)
+        self.push()
+
     def send_text(self, text, xy=(0, 0), color=get_rgb("white"), identifier=1,
                   font=2, width=64,
                   movement_speed=0,
@@ -454,6 +550,55 @@ class Pixoo:
             if self.debug:
                 print('[.] Counter loaded and stored: ' + str(self.__counter))
 
+    def __send_gif_frame(self, pic_num, pic_offset, pic_id, pic_speed, frame,
+                         allow_failure=False):
+        """Post one ``Draw/SendHttpGif`` frame.
+
+        One retry, because the device drops the TCP connection under
+        multi-frame bursts (cf. upstream #153) and urllib3 surfaces that as a
+        raw ``ConnectionResetError`` rather than a ``requests`` error.
+
+        ``allow_failure`` decides what a second failure does. An animation
+        frame sets it and gets False back, so the caller keeps the previous
+        page instead of aborting the whole HA render loop over one frame. The
+        static path does not, and re-raises like the single ``requests.post``
+        it replaced, which the sensor's error handling depends on.
+        """
+        payload = json.dumps({
+            'Command': 'Draw/SendHttpGif',
+            'PicNum': pic_num,
+            'PicWidth': self.size,
+            'PicOffset': pic_offset,
+            'PicID': pic_id,
+            'PicSpeed': pic_speed,
+            'PicData': str(base64.b64encode(bytearray(frame)).decode())
+        })
+        for attempt in (0, 1):
+            try:
+                response = requests.post(self.__url, payload, timeout=self.timeout)
+            except (requests.RequestException, ConnectionError, TimeoutError) as exc:
+                if attempt == 0:
+                    _LOGGER.debug("SendHttpGif frame %s retrying after %s.", pic_offset, exc)
+                    continue
+                if allow_failure:
+                    _LOGGER.warning("SendHttpGif frame %s failed (%s); keeping previous page.",
+                                    pic_offset, exc)
+                    return False
+                raise
+            try:
+                data = response.json()
+            except ValueError as exc:
+                if allow_failure:
+                    _LOGGER.warning("SendHttpGif frame %s bad response (%s); keeping previous page.",
+                                    pic_offset, exc)
+                    return False
+                raise
+            if data.get('error_code') != 0:
+                self.__error(data)
+                return False
+            return True
+        return False
+
     def __send_buffer(self):
 
         # Add to the internal counter
@@ -471,25 +616,18 @@ class Pixoo:
             return
 
         # Encode the buffer to base64 encoding
-        response = requests.post(self.__url, json.dumps({
-            'Command': 'Draw/SendHttpGif',
-            'PicNum': 1,
-            'PicWidth': self.size,
-            'PicOffset': 0,
-            'PicID': self.__counter,
-            'PicSpeed': 1000,
-            'PicData': str(base64.b64encode(bytearray(self.__buffer)).decode())
-        }), timeout=self.timeout)
-        data = response.json()
-        if data['error_code'] != 0:
-            self.__error(data)
-        else:
+        if self.__send_gif_frame(1, 0, self.__counter, 1000, self.__buffer):
             self.__buffers_send = self.__buffers_send + 1
 
-            if self.debug:
-                print(f'[.] Pushed {self.__buffers_send} buffers')
-
     def __reset_counter(self):
+        """Reset the device's gif counter, reporting whether it landed.
+
+        ``Draw/ResetHttpGifId`` is a prerequisite for a multi-frame push: the
+        device ACKs frames sent without it and silently discards them, so a
+        caller about to push an animation has to know whether the reset was
+        accepted. Returns True on ``error_code`` 0, False when the device
+        refuses it (transport failures raise to the caller).
+        """
         if self.debug:
             print(f'[.] Resetting counter remotely')
         response = requests.post(self.__url, json.dumps({
@@ -498,6 +636,8 @@ class Pixoo:
         data = response.json()
         if data['error_code'] != 0:
             self.__error(data)
+            return False
+        return True
 
 
 __all__ = (Channel, ImageResampleMode, Pixoo, TextScrollDirection)
