@@ -9,8 +9,8 @@ import requests
 import voluptuous as vol
 from PIL import Image
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_platform, config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.template import Template, TemplateError
@@ -20,7 +20,9 @@ from . import Pixoo
 from .pixoo64._colors import get_rgb, CSS4_COLORS, render_color
 from .const import DOMAIN, VERSION
 from .pages._pages import special_pages
-from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK
+from .pixoo64 import FontManager
+from .pixoo64._font import FONT_PICO_8, FONT_GICKO, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
+
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +38,7 @@ class Pixoo64(Entity):
         # self._ip_address = ip_address
         self._pixoo = pixoo
         self._config_entry = config_entry
-        self._pages = self._config_entry.options.get('pages_data', "")
+        self._pages = self._config_entry.options.get('pages_data', [])
         self._scan_interval = timedelta(seconds=int(self._config_entry.options.get('scan_interval', timedelta(seconds=15))))
         self._current_page_index = -1  # Start at -1 so that the first page is 0.
         self._attr_has_entity_name = True
@@ -46,44 +48,50 @@ class Pixoo64(Entity):
         self._update_task: None | Task = None
 
     async def async_added_to_hass(self):
+        platform = entity_platform.async_get_current_platform()
         # Register the buzz service
-        self.hass.services.async_register(
-            DOMAIN,
+        platform.async_register_entity_service(
             'play_buzzer',
-            self.async_play_buzzer,
-            schema=vol.Schema({
-                vol.Optional('buzz_cycle_time_millis'): int,
-                vol.Optional('idle_cycle_time_millis'): int,
-                vol.Optional('total_time'): int
-            }, extra=vol.ALLOW_EXTRA)
+            {
+                vol.Optional('buzz_cycle_time_millis'): cv.positive_int,
+                vol.Optional('idle_cycle_time_millis'): cv.positive_int,
+                vol.Optional('total_time'): cv.positive_int
+            },
+            "async_play_buzzer"
         )
 
         # Register the page service
-        self.hass.services.async_register(
-            DOMAIN,
-            'show_message',
-            self.async_show_message,
-            schema=vol.Schema({
+        platform.async_register_entity_service(
+            "show_message",
+            {
                 vol.Required('page_data'): dict,
-                vol.Optional('duration'): int,
-            }, extra=vol.ALLOW_EXTRA)
+                vol.Optional('duration'): cv.positive_int,
+            },
+            "async_show_message"
         )
 
         # Register the restart service
-        self.hass.services.async_register(
-            DOMAIN,
+        platform.async_register_entity_service(
             'restart',
-            self.restart_device,
-            schema=vol.Schema({}, extra=vol.ALLOW_EXTRA)
+            {},
+            "restart_device"
         )
+
+        # # Register the update page service
+        platform.async_register_entity_service(
+            'update_page',
+            {},
+            "update_page"
+        )
+
         # Continue with the setup
         if DOMAIN in self.hass.data:
-            self.hass.data[DOMAIN].setdefault('entities', []).append(self)
+            self.hass.data[DOMAIN].setdefault(self._config_entry.entry_id, {})['sensor'] =  self
         await self._async_next_page()
 
     async def async_will_remove_from_hass(self):
         """When entity is being removed from hass."""
-        pass
+        self.cancel_update_task()
 
     async def async_schedule_next_page(self, wait_time: float):
         _LOGGER.debug("Scheduling next page in %s seconds for %s", wait_time, self._pixoo.address)
@@ -95,13 +103,13 @@ class Pixoo64(Entity):
             except asyncio.CancelledError:
                 _LOGGER.debug('Next page timer cancelled for %s', self._pixoo.address)
         # Using HA's async_create_task instead of asyncio.create_task because it's better for HA.
-        # (Also, from the docs, it automatically cancels the task when the entry is unloaded.)
+        # (canceled in the async_will_remove_from_hass method of this file)
         self._update_task = self._config_entry.async_create_background_task(self.hass, task(), "pixoo-next-page-timer")
 
     async def _async_next_page(self):
         if self.hass.data[DOMAIN][self._config_entry.entry_id]['available'] is False:
             _LOGGER.debug("Device is not available. Not updating.")
-            self.schedule_update_ha_state()  # Force update the unavailable state of the entity.
+            self.schedule_update_ha_state()
             await self.async_schedule_next_page(self._scan_interval.total_seconds())
             return
         _LOGGER.debug("Loading next page for %s", self._pixoo.address)
@@ -111,7 +119,7 @@ class Pixoo64(Entity):
 
         is_enabled = None
         iteration_count = 0
-        self._current_page_index = (self._current_page_index + 1) % len(self._pages)  # Increment the page index, duh.
+        self._current_page_index = (self._current_page_index + 1) % len(self._pages)
         while not is_enabled:
             if iteration_count >= len(self._pages):
                 _LOGGER.info("All pages disabled. Not updating.")
@@ -127,7 +135,12 @@ class Pixoo64(Entity):
                 is_enabled = False
 
             if is_enabled:
-                duration = float(self.page.get('duration', self._scan_interval.total_seconds()))
+                try:
+                    duration = int(Template(str(self.page.get('duration', self._scan_interval.total_seconds())), self.hass).async_render())
+                except TemplateError as e:
+                    _LOGGER.error("Template render error: %s", e)
+                    duration = self._scan_interval.total_seconds()
+
                 await self.async_schedule_next_page(duration)
                 self.schedule_update_ha_state()
                 try:
@@ -142,18 +155,44 @@ class Pixoo64(Entity):
         pixoo = self._pixoo
         pixoo.clear()
 
+        font_manager = None
+        if self.hass and DOMAIN in self.hass.data:
+            font_manager = self.hass.data[DOMAIN].get(self._config_entry.entry_id, {}).get('font_manager')
+        if font_manager is None:
+            font_manager = FontManager.get_instance()
+
         page_type = page['page_type'].lower()
         if page_type in special_pages:
-            special_pages[page_type](pixoo, self.hass, page)
+            special_pages[page_type](pixoo, self.hass, page, font_manager)
             pixoo.push()
         elif page_type == "channel":
-            pixoo.set_custom_page(page['id'])
+            try:
+                channel_id = Template(str(page['id']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering channel id template: {e}")
+                channel_id = page['id']
+            pixoo.set_custom_page(channel_id)            
         elif page_type == "visualizer":
-            pixoo.set_visualizer(page['id'])
+            try:
+                visualizer_id = Template(str(page['id']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering visualizer id template: {e}")
+                visualizer_id = page['id']
+            pixoo.set_visualizer(visualizer_id)            
         elif page_type == "clock":
-            pixoo.set_clock(page['id'])
+            try:
+                clock_id = Template(str(page['id']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering clock id template: {e}")
+                clock_id = page['id']
+            pixoo.set_clock(clock_id)
         elif page_type == "gif":
-            pixoo.play_gif(page['gif_url'])
+            try:
+                gif_url = Template(str(page['gif_url']), self.hass).async_render()
+            except TemplateError as e:
+                _LOGGER.error(f"Error rendering gif url template: {e}")
+                gif_url = page['gif_url']
+            pixoo.play_gif(gif_url)
         elif page_type in ["custom", "components"]:
             variables = page.get('variables', {})
             rendered_variables = {}
@@ -170,21 +209,14 @@ class Pixoo64(Entity):
                         _LOGGER.error("Template render error: %s", e)
                         rendered_text = "Template Error"
 
-                    font_name = component.get('font', "").lower()
-                    if font_name == "gicko":
-                        font = FONT_GICKO
-                    elif font_name == "five_pix":
-                        font = FIVE_PIX
-                    elif font_name == "eleven_pix":
-                        font = ELEVEN_PIX
-                    elif font_name == "clock":
-                        font = CLOCK
-                    else:
-                        font = FONT_PICO_8  # Font by default.
+                    font_name = component.get('font', "")
+                    font = font_manager.get_font(font_name)
 
                     rendered_color = render_color(component.get('color'), self.hass, variables=rendered_variables)
 
-                    pixoo.draw_text(rendered_text.upper(), tuple(component['position']), rendered_color, font)
+                    align = component.get('align', "").lower()
+
+                    pixoo.draw_text(rendered_text, tuple(component['position']), rendered_color, font, align)
 
                 elif component['type'] == "image":
                     try:
@@ -278,9 +310,8 @@ class Pixoo64(Entity):
             pixoo.push()
 
     # Service to show a message.
-    async def async_show_message(self, call):
-        page_data = call.data.get('page_data')
-        duration = timedelta(seconds=call.data.get('duration', self._scan_interval.seconds))
+    async def async_show_message(self, page_data: dict, duration: int = -1):
+        duration = timedelta(seconds=duration if duration >= 0 else self._scan_interval.total_seconds())
 
         if not page_data or not page_data.get('page_type'):
             _LOGGER.error("No page to render.")
@@ -291,33 +322,36 @@ class Pixoo64(Entity):
 
         await self.hass.async_add_executor_job(draw)
         if self._update_task:
-            self._update_task.cancel()
+            self.cancel_update_task()
             await self.async_schedule_next_page(duration.total_seconds())
 
     # Service to play the buzzer
-    async def async_play_buzzer(self, call):
-        buzz_cycle_time = timedelta(milliseconds=call.data.get('buzz_cycle_time_millis', 500))
-        idle_cycle_time = timedelta(milliseconds=call.data.get('idle_cycle_time_millis', 500))
-        total_time = timedelta(milliseconds=call.data.get('total_time', 3000))
-
+    async def async_play_buzzer(self, buzz_cycle_time_millis: int = 500, idle_cycle_time_millis: int = 500, total_time: int = 3000):
         def buzz():
-            self._pixoo.play_buzzer(buzz_cycle_time, idle_cycle_time, total_time)
+            self._pixoo.play_buzzer(timedelta(milliseconds=buzz_cycle_time_millis), timedelta(milliseconds=idle_cycle_time_millis), timedelta(milliseconds=total_time))
 
         await self.hass.async_add_executor_job(buzz)
 
-    async def restart_device(self, call):
+    async def restart_device(self):
         def restart():
             self._pixoo.restart_device()
 
         await self.hass.async_add_executor_job(restart)
 
+    async def update_page(self):
+        def update_current_page():
+            self._render_page(self.page)
+
+        await self.hass.async_add_executor_job(update_current_page)
+
+    def cancel_update_task(self):
+        if self._update_task:
+            self._update_task.cancel()
+            _LOGGER.debug("Successfully canceled update task for %s", self._pixoo.address)
+
     @property
     def state(self):
         return self._current_page_index+1
-
-    @property
-    def entity_category(self):
-        return EntityCategory.DIAGNOSTIC
 
     @property
     def available(self) -> bool | None:

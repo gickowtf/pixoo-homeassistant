@@ -2,6 +2,7 @@
   "services": {
     "show_message": "mdi:file-send",
     "play_buzzer": "mdi:volume-vibrate",
-    "restart": "mdi:restart"
+    "restart": "mdi:restart",
+    "update_page": "mdi:file-restore"
   }
 }

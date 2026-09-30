@@ -6,7 +6,7 @@ import requests
 from PIL import Image, ImageOps
 
 from ._colors import get_rgb
-from ._font import retrieve_glyph, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK
+from ._font import retrieve_glyph, retrieve_glyph_width, FONT_GICKO, FONT_PICO_8, FIVE_PIX, ELEVEN_PIX, CLOCK, PIX24
 
 import logging
 _LOGGER = logging.getLogger(__name__)
@@ -146,8 +146,7 @@ class Pixoo:
                     f'[.] Resized image to fit on screen (saving aspect ratio): "{image_path_or_object}" ({width}, {height}) '
                     f'-> ({image.size[0]}, {image.size[1]})')
 
-        # Convert the loaded image to RGB and RGBA
-        rgb_image = image.convert('RGB')
+        # Convert the loaded image to RGBA
         rgba_image = image.convert('RGBA')
 
         # Iterate over all pixels in the image that are left and buffer them
@@ -164,7 +163,7 @@ class Pixoo:
 
                 if rgba_image.getpixel(location)[3] != 0:  # If the pixel is transparent, it won't be drawn.
                     self.draw_pixel((placed_x, placed_y),
-                                    rgb_image.getpixel(location))
+                                    rgba_image.getpixel(location))
 
     def draw_image_at_location(self, image_path_or_object, x, y,
                                image_resample_mode=ImageResampleMode.PIXEL_ART):
@@ -236,35 +235,65 @@ class Pixoo:
     def draw_character(self, character, xy=(0, 0), rgb=get_rgb("white"), font=None):
         if font is None:
             font = FONT_PICO_8
+        if hasattr(font, 'draw_character'):
+            font.draw_character(self, character, xy, rgb)
+            return
+
         matrix = retrieve_glyph(character, font)
         if matrix is not None:
             x_size = matrix[-1]
             for index, bit in enumerate(matrix):
                 if bit == 1 and index != len(matrix) - 1:
                     local_x = index % x_size
-                    local_y = int(index / x_size)
+                    local_y = int(index / x_size) # height of font
                     self.draw_pixel((xy[0] + local_x, xy[1] + local_y), rgb)
 
-    def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None):
+    def draw_text(self, text, xy=(0, 0), rgb=get_rgb("white"), font=None, align="left"):
         if font is None:
             font = FONT_PICO_8
 
-        x_offset, y_offset = 0, 0
-        for index, character in enumerate(text):
-            if character == "\n":
-                # Since for now every character is at least smaller than the '0', this works.
-                dummy_char = retrieve_glyph("0", font)
-                height = int( (len(dummy_char)-1) / dummy_char[-1] )
+        if hasattr(font, 'draw_text'):
+            return font.draw_text(self, text, xy, rgb, align)
 
-                y_offset += height+1
+        y_offset = 0
+        for line in text.split("\n"):
+            if align == "center":
+                x_offset = int(self.get_text_width(line, font) / 2) * -1
+            elif align == "right":
+                x_offset = self.get_text_width(line, font) * -1
+            else:
                 x_offset = 0
-                continue
-            elif retrieve_glyph(character, font) is None:
-                _LOGGER.error("Unknown character '" + str(character) + "'.")
-                character = "?"
+            
+            for index, character in enumerate(line):
+                if retrieve_glyph(character, font) is None:
+                    _LOGGER.error("Unknown character '" + str(character) + "'.")
+                    character = "?"
 
-            self.draw_character(character, (x_offset + xy[0], y_offset + xy[1]), rgb, font)
-            x_offset += retrieve_glyph(character, font)[-1] + 1
+                self.draw_character(character, (x_offset + xy[0], y_offset + xy[1]), rgb, font)
+                x_offset += retrieve_glyph(character, font)[-1] + 1
+            
+            # Since for now every character is at least smaller than the '0', this works.
+            dummy_char = retrieve_glyph("0", font)
+            if dummy_char and len(dummy_char) > 1 and dummy_char[-1] > 0:
+                height = int((len(dummy_char)-1) / dummy_char[-1])
+            else:
+                height = 5
+            y_offset += height+1
+
+        return y_offset
+    
+    def get_text_width(self, text, font=None):
+        if font is None:
+            font = FONT_PICO_8
+
+        if hasattr(font, 'get_text_width'):
+            return font.get_text_width(text)
+
+        length = 0
+        for index, character in enumerate(text):
+            length += retrieve_glyph_width(character, font) + 1
+
+        return max(0, length - 1)
 
     def draw_text_at_location_rgb(self, text, x, y, r, g, b):
         self.draw_text(text, (x, y), (r, g, b))

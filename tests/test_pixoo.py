@@ -36,7 +36,7 @@ class TestPixoo(unittest.TestCase):
 
         self.assertEqual(self.primary_url, pixoo._Pixoo__url)
         self.assertEqual(
-            [self.primary_url, self.primary_url],
+            [self.primary_url.lower(), self.primary_url.lower()],
             [request.url for request in m.request_history]
         )
         self.assertEqual(
@@ -55,7 +55,7 @@ class TestPixoo(unittest.TestCase):
 
         self.assertEqual(self.fallback_url, pixoo._Pixoo__url)
         self.assertEqual(
-            [self.primary_url, self.fallback_url, self.fallback_url],
+            [self.primary_url.lower(), self.fallback_url.lower(), self.fallback_url.lower()],
             [request.url for request in m.request_history]
         )
         self.assertEqual(

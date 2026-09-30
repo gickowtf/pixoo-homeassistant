@@ -6,7 +6,7 @@
 
   
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 [![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/gickowtf)
 ![python badge](https://img.shields.io/badge/Made%20with-Python-orange)
 ![last commit](https://img.shields.io/github/last-commit/gickowtf/pixoo-homeassistant?color=red)
@@ -20,7 +20,9 @@ Custom component for easy use of a Pixoo64 within Home Assistant. With this inte
 
 ## Installation
 
-1. Install this integration with HACS (adding repository required), or copy the contents of this repository's `custom_components/divoom_pixoo` directory into your `custom_components/divoom_pixoo` directory.
+Divoom Pixoo 64 Home Assistant Integration can be installed via HACS, or by manually copying the divoom_pixoo directory to Home Assistant's config/custom_components/ directory.
+
+1. Install this integration with HACS or copy the contents of this repository's `custom_components/divoom_pixoo` directory into your `custom_components/divoom_pixoo` directory.
 
     [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=gickowtf&repository=pixoo-homeassistant&category=integration)
 
@@ -84,11 +86,11 @@ In addition, all page types can be dynamically set to Enable/Disable based on HA
   enabled: "{{ states.input_boolean.YOURS.state }}"
 ```
 
-You can also set the duration of a page in seconds. This will override the scan interval set in the device settings.
+You can also set the duration of a page in seconds. This will override the scan interval set in the device settings. Note that the duration is calculated via the template only when the page is displayed.
 
-| **Config Options** | **required** |     **Default**     | **Values**                | 
-|--------------------|:------------:|:-------------------:|---------------------------|
-| duration           |      No      | (The Scan Interval) | integer/float in seconds  |
+| **Config Options** | **required** |     **Default**     | **Values**                                 | 
+|--------------------|:------------:|:-------------------:|--------------------------------------------|
+| duration           |      No      | (The Scan Interval) | integer/float in seconds or {{ template }} |
 
 ```yaml
 - page_type: PAGE_TYPE
@@ -135,6 +137,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 | content            |     Yes      |             | Your message! *{{ templates }} and [Newline](#newline) Support in text* |
 | font               |      No      | pico_8      | [Fonts](#fonts)                                                         |
 | color              |      No      | white       | [R, G, B] or [Colors](#color-presets)                                   |
+| align              |      No      | left        | left, right or center                                                   |
 
   Example
 ```yaml
@@ -148,7 +151,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 | **Config Options** | **required**  | **Default** | **Values**                                                                                                                          | 
 |--------------------|:-------------:|-------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | position           |      Yes      |             | The text [position](#xy-positioning) on a XY axis at 64x64 pixel                                                                    |
-| image_path         | Yes(pick one) |             | image path like /config/img/haus.png                                                                                                |
+| image_path         | Yes(pick one) |             | image path like <code>/config/img/haus.png</code>  </br> do NOT use folder /config/custom_components/divoom_pixoo/img/  !!!         |
 | image_url          | Yes(pick one) |             | image url like template {{ entity image }} or https://raw.githubusercontent.com/gickowtf/pixoo-homeassistant/main/images/fuel.png   |
 | image_data         | Yes(pick one) |             | image data in base64. Convert images [here](https://base64.guru/converter/encode/image).                                            |
 | height             |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
@@ -695,13 +698,32 @@ mode: single
 
 ## Fonts
 
-| Font       | Image                                      |
-|------------|--------------------------------------------|
-| gicko      | ![FONT_GICKO.png](images%2FFONT_GICKO.png) |
-| five_pix   | ![five_pix.png](images%2Ffive_pix.png)     |
-| pico_8     | ![PICO_8.png](images%2FPICO_8.png)         |
-| eleven_pix | ![eleven_pix.png](images%2Feleven_pix.png) |
-| clock      | ![CLOCK.png](images%2FCLOCK.png)           |
+The integration includes two categories of fonts:
+
+### 1. Bundled BDF Pixel Fonts (Multilingual & Unicode Symbols)
+These open-source Adobe BDF fonts provide all kinds of characters and symbols, including full European accents, Cyrillic, fractions, directional arrows, currency signs, math symbols, and more.
+
+| Font | Character Coverage & Language Support | Sample |
+| :--- | :--- | :--- |
+| **`Tiny5`** | **1,650+ Glyphs (5px proportional):** Broad Western & Central European Latin (`á é ñ ç`), Cyrillic, fractions (`¼ ½ ¾`), arrows (`← ↑ → ↓`), currencies (`₿ € £ ¥ ¢ $`), math (`° ± × ÷`), and symbols (`© ® ™`). | ![Tiny5.png](images%2FTiny5.png) |
+| **`PixelifySans`** | **570+ Glyphs (7px):** Proportional modern pixel font with a flourish, supporting Latin, Cyrillic, currencies (`€ £ ¥`), and math symbols (`° ± ×`). | ![PixelifySans.png](images%2FPixelifySans.png) |
+| **`PressStart2P`** | **650+ Glyphs (8px Monospace):** Classic 8-bit arcade font supporting Latin, Greek, Cyrillic, math, and retro gaming symbols (`★`, `♥`, `♪`, `◆`, `← ↑ → ↓`). | ![PressStart2P.png](images%2FPressStart2P.png) |
+| **`PICO_8`** | **265 Glyphs (3x5 / 4px Monospace):** Official PICO-8 console font, and tinier than Tiny5, supporting uppercase (A–Z), small-caps (a–z), numbers, Katakana, arrows, and retro game symbols (`♥`, `★`, `♪`, `◆`, `⌂`, `⬅ ➡ ⬆ ⬇`). | ![PICO_8.png](images%2FPICO_8.png) |
+
+### 2. Built-in Bit-Matrix Fonts (A–Z, a–z, 0–9)
+Fast, compact hardcoded fonts for standard English text, clock displays, and countdown numbers:
+
+| Font | Character Set & Description | Sample |
+| :--- | :--- | :--- |
+| **`five_pix`** | 5x5 uppercase (A–Z), lowercase (a–z), 0–9, and punctuation (`. , ! ? - / °`). | ![five_pix.png](images%2Ffive_pix.png) |
+| **`gicko`** | 6x6 uppercase (A–Z), 0–9, and symbols (lowercase automatically converts to uppercase). | ![FONT_GICKO.png](images%2FFONT_GICKO.png) |
+| **`eleven_pix`** | 11px tall uppercase headers (A–Z) and large numbers (0–9). | ![eleven_pix.png](images%2Feleven_pix.png) |
+| **`clock`** | Specialized digital clock numbers (0–9) and colon (`:`). | ![CLOCK.png](images%2FCLOCK.png) |
+
+### Custom Fonts
+You can drop any standard `.bdf` bitmap font file into `/config/fonts/` (for example `unifont.bdf` or `MinecraftDefault.bdf`) and use it in any text component with `font: unifont`.
+
+See [`READMES/fonts.md`](READMES/fonts.md) for full configuration examples and page layouts.
 
 
 <br>
@@ -779,4 +801,5 @@ Use this integration at your own risk.
 
 ## ❤️ Many thanks to
 
-@Mrredstone5230 - Thanks for the conversion to config flow and many many more
+[@SB2DD](https://github.com/SB2DD) - Thanks for the conversion to config flow and many many more<br>
+[SmartHome yourself](https://www.youtube.com/watch?v=lHtrDga7piI) - A German YouTuber who has created a video about this integration
