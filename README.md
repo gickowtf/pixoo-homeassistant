@@ -157,6 +157,7 @@ A components page  turns your Pixoo into your canvas!  You can tie multiple text
 | height             |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
 | width              |      No       |             | If none is selected, the image will be at it's original size. If one is selected, it will become the longest side. Proportional     |
 | resample_mode      |      No       | `box`       | `box`, `nearest`, `bilinear`, `hamming`, `bicubic`, `lanczos`                                                                       |
+| animation_speed    |      No       | GIF delay   | Frame delay in ms for animated images (50-2000). Without it, the mean GIF frame delay is used. Static images ignore it.             |
 
 Example
 ```yaml
@@ -165,6 +166,22 @@ Example
       image_path: /config/image/haus.png
       resample_mode: box
       height: 64
+```
+
+Animated images (GIF/WebP/APNG) inside a `components` page animate in place:
+every frame of the source is composited with the rest of the page (text,
+rectangles, static images) and pushed as one looping animation, so static
+content stays still while the image moves. At most 32 frames are pushed per
+draw; longer sources are truncated. Frames post one at a time with a short
+pause (~150 ms), so a 30-frame animation takes a few seconds; if a push is
+interrupted, the first frame is re-sent as a static image.
+```yaml
+    - type: image
+      position: [0, 0]
+      image_path: /config/image/animated-weather.gif
+      width: 64
+      height: 64
+      animation_speed: 200  # optional, ms per frame; default is the GIF's own delay
 ```
 
 
