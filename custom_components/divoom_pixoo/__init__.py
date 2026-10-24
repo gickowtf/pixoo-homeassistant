@@ -123,7 +123,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             elif "Fuel" in old_page:
                 new["pages_data"].append({"page_type": "fuel", **old_page["Fuel"][0]})
         hass.config_entries.async_update_entry(config_entry, options=new)
-        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, version=2)
         _LOGGER.debug("Migrated config to version 2. New config: %s", config_entry.options)
 
     if config_entry.version != CURRENT_ENTRY_VERSION:
