@@ -229,11 +229,50 @@ class BdfFont:
             return g['width']
         return 3
 
+    def _measure_line_bounds(self, line: str) -> Tuple[int, int]:
+        """Return the drawn (min_x, max_x) pixel bounds starting from x=0.
+
+        BDF fonts bake inter-character spacing into DWIDTH, which pushes right
+        and center alignment off by the trailing gap. Measuring each glyph's
+        actual box drops that extra space while still handling left offsets,
+        wide overhanging accents, and zero-width combining marks.
+        """
+        if not line:
+            return (0, 0)
+
+        cx = 0
+        min_x = None
+        max_x = None
+
+        for char in line:
+            if char == ' ':
+                advance = self.get_char_width(' ')
+                char_left, char_right = cx, cx + advance
+            else:
+                g = self.get_glyph_bdf(char)
+                if g is None:
+                    advance = self.get_char_width('?')
+                    char_left, char_right = cx, cx + advance
+                else:
+                    w, _, xoff, _ = g['bbx']
+                    advance = g['width']
+                    if w > 0:
+                        char_left = cx + xoff
+                        char_right = cx + xoff + w
+                    else:
+                        char_left, char_right = cx, cx + advance
+
+            min_x = char_left if min_x is None else min(min_x, char_left)
+            max_x = char_right if max_x is None else max(max_x, char_right)
+            cx += advance
+
+        return (min_x, max_x)
+
     def get_text_width(self, text: str) -> int:
-        """Calculate total pixel width of text string."""
+        """Return the drawn pixel width of text (longest line if multiline)."""
         if not text:
             return 0
-        return sum(self.get_char_width(c) for c in str(text))
+        return max(max(0, self._measure_line_bounds(line)[1]) for line in str(text).split('\n'))
 
     def get_glyph(self, char: str) -> Optional[List[int]]:
         """Backward compatibility: convert BDF glyph into flat bit-matrix list."""
@@ -289,10 +328,11 @@ class BdfFont:
         y_offset = 0
 
         for line in lines:
+            min_x, max_x = self._measure_line_bounds(line)
             if align == "center":
-                x_offset = int(self.get_text_width(line) / 2) * -1
+                x_offset = -int((min_x + max_x) / 2)
             elif align == "right":
-                x_offset = self.get_text_width(line) * -1
+                x_offset = -max_x
             else:
                 x_offset = 0
 

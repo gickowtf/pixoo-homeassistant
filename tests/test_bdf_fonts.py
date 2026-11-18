@@ -4,7 +4,8 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-from custom_components.divoom_pixoo.pixoo64._bdf import FontManager, BdfFont
+from custom_components.divoom_pixoo.pixoo64._bdf import FontManager, BdfFont, BitMatrixFont
+from custom_components.divoom_pixoo.pixoo64._font import FONT_PICO_8
 from custom_components.divoom_pixoo.pixoo64._pixoo import Pixoo
 
 
@@ -54,6 +55,24 @@ class TestBdfFonts(unittest.TestCase):
                 self.pixoo.clear()
                 self.pixoo.draw_text("Aäé→", (0, 8), (255, 255, 255), font)
                 self.assertTrue(any(self.pixoo._Pixoo__buffer))
+
+    def test_text_alignment_and_width(self):
+        pico = self.fm.get_font("PICO_8", fallback=False)
+        self.assertEqual(BitMatrixFont("pico_8", FONT_PICO_8).get_text_width("0"), pico.get_text_width("0"))
+        self.assertEqual(0, pico.get_text_width(""))
+        self.assertEqual(7, pico.get_text_width("0\n00"))
+
+        def lit_cols(font_name, text, xy, align):
+            self.pixoo.clear()
+            self.pixoo.draw_text(text, xy, (255, 255, 255), self.fm.get_font(font_name, fallback=False), align=align)
+            buf, size = self.pixoo._Pixoo__buffer, self.pixoo.size
+            return {x for y in range(size) for x in range(size) if any(buf[(x + y * size) * 3:(x + y * size) * 3 + 3])}
+
+        self.assertEqual({1, 2, 3}, lit_cols("PICO_8", "0", (4, 0), "right"))
+        self.assertEqual({60, 61, 62}, lit_cols("PICO_8", "0", (63, 0), "right"))
+        self.assertEqual(62, max(lit_cols("Tiny5", "Ĩ", (63, 10), "right")))
+        self.assertEqual({31, 32, 33}, lit_cols("PICO_8", "0", (32, 0), "center"))
+        self.assertEqual({30, 31, 32, 33, 34}, lit_cols("PixelifySans", "0", (32, 0), "center"))
 
     def test_invalid_custom_font_falls_back(self):
         with tempfile.TemporaryDirectory() as directory:
